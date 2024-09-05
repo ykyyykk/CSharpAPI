@@ -12,7 +12,8 @@ builder.Services.AddCors(options =>
 });
 
 //將Mysql注入DIContainer
-builder.Services.AddMySqlDataSource("Server=192.168.38.128;User ID=aaa;Password=aaa;Database=shop");
+// builder.Services.AddMySqlDataSource("Server=192.168.38.128;User ID=aaa;Password=aaa;Database=ShoppingWebsite");
+builder.Services.AddMySqlDataSource("Server=34.82.250.51;User ID=aaa;Password=louise87276;Database=ShoppingWebsite");
 
 
 // Add services to the container.
@@ -50,6 +51,7 @@ app.MapGet("/api/v1/item", (MySqlConnection connection) =>
     using var reader = command.ExecuteReader();
 
     List<dynamic> values = new List<dynamic>();
+    Console.WriteLine("開始讀取");
     //讀出每一筆資料
     while (reader.Read())
     {
@@ -58,6 +60,8 @@ app.MapGet("/api/v1/item", (MySqlConnection connection) =>
         var value2 = reader.GetValue(2);
         var value3 = reader.GetValue(3);
         var value4 = reader.GetValue(4);
+        var value6 = reader.GetValue(5);
+        var value5 = reader.GetValue(6);
 
         values.Add(new
         {
@@ -66,8 +70,11 @@ app.MapGet("/api/v1/item", (MySqlConnection connection) =>
             detail = value2,
             price = value3,
             stock = value4,
+            category = value5,
+            status = value6,
         });
     }
+    Console.WriteLine("讀取結束");
 
     Console.WriteLine($"values.Count: {values.Count}");
     foreach (dynamic value in values)

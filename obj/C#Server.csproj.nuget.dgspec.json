@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\Desktop\\C#Server\\C#Server.csproj": {}
+    "C:\\Users\\User\\Desktop\\CSharpAPI\\C#Server.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\Desktop\\C#Server\\C#Server.csproj": {
+    "C:\\Users\\User\\Desktop\\CSharpAPI\\C#Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Desktop\\C#Server\\C#Server.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Desktop\\CSharpAPI\\C#Server.csproj",
         "projectName": "C#Server",
-        "projectPath": "C:\\Users\\User\\Desktop\\C#Server\\C#Server.csproj",
+        "projectPath": "C:\\Users\\User\\Desktop\\CSharpAPI\\C#Server.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Desktop\\C#Server\\obj\\",
+        "outputPath": "C:\\Users\\User\\Desktop\\CSharpAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -50,6 +50,12 @@
               "target": "Package",
               "version": "[8.0.8, )"
             },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.8, )",
+              "autoReferenced": true
+            },
             "MySqlConnector.DependencyInjection": {
               "target": "Package",
               "version": "[2.3.6, )"
@@ -70,6 +76,20 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
+              "version": "[8.0.8, 8.0.8]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.linux-x64",
+              "version": "[8.0.8, 8.0.8]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.linux-x64",
+              "version": "[8.0.8, 8.0.8]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -79,6 +99,11 @@
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.401/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
         }
       }
     }
