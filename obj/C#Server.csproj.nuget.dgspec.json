@@ -1,28 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\Desktop\\CSharpAPI\\C#Server.csproj": {}
+    "D:\\Desktop\\Git\\CSharpAPI\\C#Server.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\Desktop\\CSharpAPI\\C#Server.csproj": {
+    "D:\\Desktop\\Git\\CSharpAPI\\C#Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Desktop\\CSharpAPI\\C#Server.csproj",
+        "projectUniqueName": "D:\\Desktop\\Git\\CSharpAPI\\C#Server.csproj",
         "projectName": "C#Server",
-        "projectPath": "C:\\Users\\User\\Desktop\\CSharpAPI\\C#Server.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Desktop\\CSharpAPI\\obj\\",
+        "projectPath": "D:\\Desktop\\Git\\CSharpAPI\\C#Server.csproj",
+        "packagesPath": "C:\\Users\\louis\\.nuget\\packages\\",
+        "outputPath": "D:\\Desktop\\Git\\CSharpAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\louis\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -53,7 +50,7 @@
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.8, )",
+              "version": "[8.0.2, )",
               "autoReferenced": true
             },
             "MySqlConnector.DependencyInjection": {
@@ -79,15 +76,15 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
-              "version": "[8.0.8, 8.0.8]"
+              "version": "[8.0.2, 8.0.2]"
             },
             {
               "name": "Microsoft.NETCore.App.Host.linux-x64",
-              "version": "[8.0.8, 8.0.8]"
+              "version": "[8.0.2, 8.0.2]"
             },
             {
               "name": "Microsoft.NETCore.App.Runtime.linux-x64",
-              "version": "[8.0.8, 8.0.8]"
+              "version": "[8.0.2, 8.0.2]"
             }
           ],
           "frameworkReferences": {
@@ -98,7 +95,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.401/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.201/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
