@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +17,6 @@ builder.Services.AddCors(options =>
 // builder.Services.AddMySqlDataSource("Server=192.168.38.128;User ID=aaa;Password=aaa;Database=ShoppingWebsite");
 builder.Services.AddMySqlDataSource("Server=34.82.250.51;User ID=aaa;Password=louise87276;Database=ShoppingWebsite");
 
-
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -26,7 +25,6 @@ var app = builder.Build();
 //使用Cors跨域設定
 app.UseCors("CorsPolicy");
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -35,61 +33,67 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+
+app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection) =>
+{
+    // dotnet run 時會錯誤
+    // logger.LogInformation("Test endpoint called at {time}", DateTime.UtcNow);
+    Console.WriteLine("Test");
+    await context.Response.WriteAsJsonAsync(new { message = "Test successful", time = DateTime.UtcNow });
+});
+
+app.MapPost("/api/checkverification", async (HttpContext context, MySqlConnection connection) =>
+{
+    try
+    {
+        using var reader = new StreamReader(context.Request.Body);
+        var requestBody = await reader.ReadToEndAsync();
+        var jsonDocument = JsonDocument.Parse(requestBody);
+        // 將Json反序列化成VerificationRequest
+        var request = JsonSerializer.Deserialize<VerificationRequest>(requestBody);
+
+        await connection.OpenAsync();
+
+        using var command = new MySqlCommand("SELECT * FROM Verification WHERE email = @email AND code = @code", connection);
+        command.Parameters.AddWithValue("@email", request.Email);
+        command.Parameters.AddWithValue("@code", request.VerificationCode);
+
+        using var dataReader = await command.ExecuteReaderAsync();
+
+        if (await dataReader.ReadAsync())
+        {
+            Console.WriteLine($"dataReader: ${dataReader}");
+            var row = new
+            {
+                id = dataReader.GetInt32("id"),
+                email = dataReader.GetString("email"),
+                code = dataReader.GetString("code")
+            };
+            await context.Response.WriteAsJsonAsync(new { success = true, row = row });
+        }
+        else
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            await context.Response.WriteAsJsonAsync(new { success = false, message = "驗證碼錯誤" });
+        }
+    }
+    catch (JsonException)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = "Invalid JSON format" });
+    }
+    catch (Exception exception)
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = $"錯誤: {exception.Message}", error = exception.Message });
+    }
+});
+
+
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
-
-app.MapGet("/api/v1/item", (MySqlConnection connection) =>
-{
-    //連接資料庫
-    connection.Open();
-
-    //準備sql
-    using var command = new MySqlCommand("SELECT * FROM Item;", connection);
-    //執行sql
-    using var reader = command.ExecuteReader();
-
-    List<dynamic> values = new List<dynamic>();
-    Console.WriteLine("開始讀取");
-    //讀出每一筆資料
-    while (reader.Read())
-    {
-        var value0 = reader.GetValue(0);
-        var value1 = reader.GetValue(1);
-        var value2 = reader.GetValue(2);
-        var value3 = reader.GetValue(3);
-        var value4 = reader.GetValue(4);
-        var value6 = reader.GetValue(5);
-        var value5 = reader.GetValue(6);
-
-        values.Add(new
-        {
-            id = value0,
-            name = value1,
-            detail = value2,
-            price = value3,
-            stock = value4,
-            category = value5,
-            status = value6,
-        });
-    }
-    Console.WriteLine("讀取結束");
-
-    Console.WriteLine($"values.Count: {values.Count}");
-    foreach (dynamic value in values)
-    {
-        Console.WriteLine(value);
-    }
-
-    return new
-    {
-        Code = 200,
-        Message = "success",
-        Data = values
-    };
-});
-
 app.MapGet("/weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
