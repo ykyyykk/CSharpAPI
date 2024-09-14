@@ -22,3 +22,6 @@ bin/
 
 # 忽略測試覆蓋率報告
 coverage/
+
+# 忽略GCP SSH
+export_key
