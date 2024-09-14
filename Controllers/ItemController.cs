@@ -48,6 +48,7 @@ namespace CSharpAPI.Controllers
                          };
                          rows.Add(item);
                     }
+                    // return Ok(new APIResponse(true, "成功取得所有物品", rows));
                     return Ok(new { success = true, items = rows });
                }
                catch (JsonException)
