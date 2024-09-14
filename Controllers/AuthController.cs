@@ -3,6 +3,14 @@ using MySqlConnector;
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
 
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Net.Mail;
+using System.Net;
+using System.Reflection;
+
+
 namespace CSharpAPI.Controllers
 {
      [ApiController]
@@ -10,6 +18,7 @@ namespace CSharpAPI.Controllers
      public class AuthController : ControllerBase
      {
           private readonly MySqlConnection connection;
+          private readonly SmtpClient smtpClient;
 
           // 使用了builder.Services.AddControllers()
           // 並且在 app.MapControllers() 中啟用了控制器路由
@@ -17,6 +26,13 @@ namespace CSharpAPI.Controllers
           public AuthController(MySqlConnection connection)
           {
                this.connection = connection;
+
+               smtpClient = new SmtpClient("smtp.gmail.com")
+               {
+                    Port = 587,
+                    Credentials = new NetworkCredential("louise87276@gmail.com", "hssp gwtv aftv otkb"),
+                    EnableSsl = true,
+               };
           }
 
           [HttpPost("checkverification")]
@@ -159,6 +175,68 @@ namespace CSharpAPI.Controllers
                     // 取得插入的ID
                     var userID = command.LastInsertedId;
                     return Ok(new { success = true, userID = userID });
+               }
+               catch (JsonException)
+               {
+                    return BadRequest(new { success = false, message = "Invalid JSON format" });
+               }
+               catch (Exception exception)
+               {
+                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
+               }
+          }
+
+          [HttpPost("sendverification")]
+          public async Task<IActionResult> SendVerification()
+          {
+               try
+               {
+                    using var reader = new StreamReader(Request.Body);
+                    var requestBody = await reader.ReadToEndAsync();
+
+                    var json = JObject.Parse(requestBody);
+                    var email = (string)json["email"];
+
+                    await connection.OpenAsync();
+
+                    using var checkCommand = new MySqlCommand("SELECT email FROM User WHERE email = @email", connection);
+                    checkCommand.Parameters.AddWithValue("@email", email);
+
+                    // 插入時改使用ExecuteNonQueryAsync
+                    using var dataReader = await checkCommand.ExecuteReaderAsync();
+
+                    if (await dataReader.ReadAsync())
+                    {
+                         return Ok(new { success = false, message = "此信箱已經註冊過了" });
+                    }
+                    await dataReader.CloseAsync();
+
+                    var random = new Random();
+                    int verificationCode = random.Next(100000, 999999);
+
+                    using var insertCommand = new MySqlCommand("INSERT INTO Verification (email, code, createdAt, expiresAt) VALUES(@email, @code, @createdAt, expiresAt)", connection);
+                    var createdAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    var expiresAt = createdAt + 300000;
+                    insertCommand.Parameters.AddWithValue("@email", email);
+                    insertCommand.Parameters.AddWithValue("@code", verificationCode.ToString());
+                    insertCommand.Parameters.AddWithValue("@createdAt", createdAt);
+                    insertCommand.Parameters.AddWithValue("@expiresAt", expiresAt);
+
+                    await insertCommand.ExecuteNonQueryAsync();
+
+                    // sendMail不知道怎麼做
+                    var mailMessage = new MailMessage
+                    {
+                         From = new MailAddress("louise872726@gmail.com"),
+                         Subject = "你的驗證碼",
+                         Body = $"你的驗證碼是: {verificationCode}",
+                         IsBodyHtml = false
+                    };
+                    mailMessage.To.Add(email);
+
+                    await smtpClient.SendMailAsync(mailMessage);
+
+                    return Ok(new { success = true, message = "驗證碼已發送" });
                }
                catch (JsonException)
                {
