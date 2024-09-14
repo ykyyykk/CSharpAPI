@@ -34,3 +34,4 @@ D:\Desktop\Git\CSharpAPI\obj\Debug\net8.0\refint\CSharpAPI.dll
 D:\Desktop\Git\CSharpAPI\obj\Debug\net8.0\CSharpAPI.pdb
 D:\Desktop\Git\CSharpAPI\obj\Debug\net8.0\CSharpAPI.genruntimeconfig.cache
 D:\Desktop\Git\CSharpAPI\obj\Debug\net8.0\ref\CSharpAPI.dll
+D:\Desktop\Git\CSharpAPI\bin\Debug\net8.0\Newtonsoft.Json.dll

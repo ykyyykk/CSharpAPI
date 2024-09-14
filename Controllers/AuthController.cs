@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using System.Text.Json;
+using Newtonsoft.Json.Linq;
 
 namespace CSharpAPI.Controllers
 {
@@ -68,6 +69,59 @@ namespace CSharpAPI.Controllers
                     return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
                }
           }
+
+          [HttpPost("login")]
+          public async Task<IActionResult> Login()
+          {
+               Console.WriteLine("Login");
+               try
+               {
+                    using var reader = new StreamReader(Request.Body);
+                    var requestBody = await reader.ReadToEndAsync();
+
+                    //需要安裝dotnet add package Newtonsoft.Json
+                    //並且using System.Runtime.InteropServices;
+                    var json = JObject.Parse(requestBody);
+                    //一定要明確轉型 沒轉型之前是JObject 直接拿去用AddWithValue會報錯
+                    var email = (string)json["email"];
+                    var password = (string)json["password"];
+                    //就算取得一個不存在的值也不會報錯
+
+                    await connection.OpenAsync();
+
+                    using var command = new MySqlCommand("SELECT * FROM User WHERE email = @email AND password = @password", connection);
+
+                    command.Parameters.AddWithValue("@email", email);
+                    command.Parameters.AddWithValue("@password", password);
+                    using var dataReader = await command.ExecuteReaderAsync();
+
+                    if (await dataReader.ReadAsync())
+                    {
+                         var user = new
+                         {
+                              id = dataReader["id"],
+                              name = dataReader["name"],
+                              phoneNumber = dataReader["phoneNumber"],
+                              email = dataReader["email"],
+                              password = dataReader["password"],
+                         };
+                         return Ok(new { success = true, user = user });
+                    }
+                    return NotFound(new { success = false, message = "User not found" });
+
+               }
+               catch (JsonException)
+               {
+                    Console.WriteLine("JsonException");
+                    return BadRequest(new { success = false, message = "Invalid JSON format" });
+               }
+               catch (Exception exception)
+               {
+                    Console.WriteLine("Exception");
+                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
+               }
+          }
+
      }
 
      public class VerificationRequest
