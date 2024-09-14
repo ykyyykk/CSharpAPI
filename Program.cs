@@ -15,9 +15,10 @@ builder.Services.AddCors(options =>
 //將Mysql注入DIContainer
 // builder.Services.AddMySqlDataSource("Server=192.168.38.128;User ID=aaa;Password=aaa;Database=ShoppingWebsite");
 builder.Services.AddMySqlDataSource("Server=34.82.250.51;User ID=aaa;Password=louise87276;Database=ShoppingWebsite");
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// 添加 Controller 支持
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -31,47 +32,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.MapGet("/api/getallitem", async (HttpContext context, MySqlConnection connection) =>
-{
-    try
-    {
-        await connection.OpenAsync();
-        using var command = new MySqlCommand("SELECT * FROM Item", connection);
-        using var dataReader = await command.ExecuteReaderAsync();
-        List<dynamic> rows = new List<dynamic>();
-
-        while (await dataReader.ReadAsync())
-        {
-            var item = new
-            {
-                id = dataReader["id"],
-                name = dataReader["name"],
-                detail = dataReader["detail"],
-                price = dataReader["price"],
-                stock = dataReader["stock"],
-                category = dataReader["category"],
-                status = dataReader["status"],
-                saleAmount = dataReader["saleAmount"],
-                thumbnail = dataReader["thumbnail"],
-            };
-            rows.Add(item);
-        }
-        await context.Response.WriteAsJsonAsync(new { success = true });
-    }
-    catch (JsonException)
-    {
-        Console.WriteLine("JsonException");
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new { success = false, message = "Invalid JSON format" });
-    }
-    catch (Exception exception)
-    {
-        Console.WriteLine("exception");
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        await context.Response.WriteAsJsonAsync(new { success = false, message = $"錯誤: {exception.Message}", error = exception.Message });
-    }
-});
+app.MapControllers();
 
 app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection) =>
 {
