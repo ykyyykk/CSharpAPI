@@ -68,12 +68,20 @@ namespace CSharpAPI.Controllers
                     Console.WriteLine("Exception");
                     return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
                }
+               // connection 是透過 依賴注入 所以不需要在每個api後面都加上finally
+               // finally
+               // {
+               //      // 确保数据库连接关闭
+               //      if (connection.State == System.Data.ConnectionState.Open)
+               //      {
+               //           await connection.CloseAsync();
+               //      }
+               // }
           }
 
           [HttpPost("login")]
           public async Task<IActionResult> Login()
           {
-               Console.WriteLine("Login");
                try
                {
                     using var reader = new StreamReader(Request.Body);
@@ -122,12 +130,51 @@ namespace CSharpAPI.Controllers
                }
           }
 
-     }
+          [HttpPost("register")]
+          public async Task<IActionResult> Register()
+          {
+               try
+               {
+                    using var reader = new StreamReader(Request.Body);
+                    var requestBody = await reader.ReadToEndAsync();
 
-     public class VerificationRequest
-     {
-          //一定要get set不然沒辦法Deserialize
-          public string email { get; set; }
-          public string verificationCode { get; set; }
+                    var json = JObject.Parse(requestBody);
+                    var name = (string)json["name"];
+                    var phoneNumber = (string)json["phoneNumber"];
+                    var email = (string)json["email"];
+                    var password = (string)json["password"];
+
+                    await connection.OpenAsync();
+
+                    using var command = new MySqlCommand("INSERT INTO User (name, phoneNumber, email, password) VALUES (@name, @phoneNumber, @email, @password)", connection);
+
+                    command.Parameters.AddWithValue("@name", name);
+                    command.Parameters.AddWithValue("@phoneNumber", phoneNumber);
+                    command.Parameters.AddWithValue("@email", email);
+                    command.Parameters.AddWithValue("@password", password);
+
+                    // 插入時改使用ExecuteNonQueryAsync
+                    await command.ExecuteNonQueryAsync();
+
+                    // 取得插入的ID
+                    var userID = command.LastInsertedId;
+                    return Ok(new { success = true, userID = userID });
+               }
+               catch (JsonException)
+               {
+                    return BadRequest(new { success = false, message = "Invalid JSON format" });
+               }
+               catch (Exception exception)
+               {
+                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
+               }
+          }
      }
+}
+
+public class VerificationRequest
+{
+     //一定要get set不然沒辦法Deserialize
+     public string email { get; set; }
+     public string verificationCode { get; set; }
 }
