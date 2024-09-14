@@ -1,13 +1,35 @@
+# 忽略編譯輸出
 bin/
+obj/
+
+# 忽略Visual Studio文件
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# 忽略NuGet包
+*.nupkg
+# NuGet Symbol Packages
+*.snupkg
+# 忽略NuGet包文件夾
+packages/
+
+# 忽略測試結果
+TestResults/
 
 # 忽略日誌文件
 *.log
 
 # 忽略環境變數文件
 .env
+appsettings.Development.json
+appsettings.Production.json
 
 # 忽略 Mac 系統生成的隱藏文件
 *.DS_Store
+Thumbs.db
 
 # 忽略 Vim 的臨時文件
 *.swp
@@ -19,9 +41,13 @@ bin/
 
 # 忽略臨時文件
 *.tmp
+*.temp
 
 # 忽略測試覆蓋率報告
 coverage/
+
+# 忽略發布文件夾
+publish/
 
 # 忽略GCP SSH
 export_key

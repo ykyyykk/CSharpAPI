@@ -2,13 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
-
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using System.Net.Mail;
 using System.Net;
-using System.Reflection;
 
 
 namespace CSharpAPI.Controllers
