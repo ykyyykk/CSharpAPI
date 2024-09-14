@@ -39,7 +39,40 @@ app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection)
     // dotnet run 時會錯誤
     // logger.LogInformation("Test endpoint called at {time}", DateTime.UtcNow);
     Console.WriteLine("Test");
+    Console.WriteLine("aaa");
+    Console.WriteLine("bbb");
+    Console.WriteLine("ccc");
     await context.Response.WriteAsJsonAsync(new { message = "Test successful", time = DateTime.UtcNow });
+});
+
+app.MapPost("/api/getallitem", async (HttpContext context, MySqlConnection connection) =>
+{
+    Console.WriteLine("getallitem");
+    try
+    {
+        await connection.OpenAsync();
+        using var command = new MySqlCommand("select * from Item", connection);
+        using var dataReader = await command.ExecuteReaderAsync();
+        if (await dataReader.ReadAsync())
+        {
+            Console.WriteLine($"dataReader: {dataReader}");
+            await context.Response.WriteAsJsonAsync(new { success = true });
+        }
+        else
+        {
+            Console.WriteLine("else");
+        }
+    }
+    catch (JsonException)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = "Invalid JSON format" });
+    }
+    catch (Exception exception)
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = $"錯誤: {exception.Message}", error = exception.Message });
+    }
 });
 
 app.MapPost("/api/checkverification", async (HttpContext context, MySqlConnection connection) =>
@@ -48,7 +81,6 @@ app.MapPost("/api/checkverification", async (HttpContext context, MySqlConnectio
     {
         using var reader = new StreamReader(context.Request.Body);
         var requestBody = await reader.ReadToEndAsync();
-        var jsonDocument = JsonDocument.Parse(requestBody);
         // 將Json反序列化成VerificationRequest
         var request = JsonSerializer.Deserialize<VerificationRequest>(requestBody);
 
@@ -89,29 +121,4 @@ app.MapPost("/api/checkverification", async (HttpContext context, MySqlConnectio
     }
 });
 
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
 app.Run("http://*:5000");
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
