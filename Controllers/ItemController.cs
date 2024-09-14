@@ -29,22 +29,22 @@ namespace CSharpAPI.Controllers
                {
                     await connection.OpenAsync();
                     using var command = new MySqlCommand("select * from Item", connection);
-                    using var reader = await command.ExecuteReaderAsync();
+                    using var dataReader = await command.ExecuteReaderAsync();
                     List<dynamic> rows = new List<dynamic>();
 
-                    while (await reader.ReadAsync())
+                    while (await dataReader.ReadAsync())
                     {
                          var item = new
                          {
-                              id = reader["id"],
-                              name = reader["name"],
-                              detail = reader["detail"],
-                              price = reader["price"],
-                              stock = reader["stock"],
-                              category = reader["category"],
-                              status = reader["status"],
-                              saleAmount = reader["saleAmount"],
-                              thumbnail = reader["thumbnail"],
+                              id = dataReader["id"],
+                              name = dataReader["name"],
+                              detail = dataReader["detail"],
+                              price = dataReader["price"],
+                              stock = dataReader["stock"],
+                              category = dataReader["category"],
+                              status = dataReader["status"],
+                              saleAmount = dataReader["saleAmount"],
+                              thumbnail = dataReader["thumbnail"],
                          };
                          rows.Add(item);
                     }
