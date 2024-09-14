@@ -4,7 +4,6 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
@@ -33,46 +32,56 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.MapGet("/api/getallitem", async (HttpContext context, MySqlConnection connection) =>
+{
+    try
+    {
+        await connection.OpenAsync();
+        using var command = new MySqlCommand("SELECT * FROM Item", connection);
+        using var dataReader = await command.ExecuteReaderAsync();
+        List<dynamic> rows = new List<dynamic>();
+
+        while (await dataReader.ReadAsync())
+        {
+            var item = new
+            {
+                id = dataReader["id"],
+                name = dataReader["name"],
+                detail = dataReader["detail"],
+                price = dataReader["price"],
+                stock = dataReader["stock"],
+                category = dataReader["category"],
+                status = dataReader["status"],
+                saleAmount = dataReader["saleAmount"],
+                thumbnail = dataReader["thumbnail"],
+            };
+            rows.Add(item);
+        }
+        await context.Response.WriteAsJsonAsync(new { success = true });
+    }
+    catch (JsonException)
+    {
+        Console.WriteLine("JsonException");
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = "Invalid JSON format" });
+    }
+    catch (Exception exception)
+    {
+        Console.WriteLine("exception");
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = $"錯誤: {exception.Message}", error = exception.Message });
+    }
+});
 
 app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection) =>
 {
     // dotnet run 時會錯誤
     // logger.LogInformation("Test endpoint called at {time}", DateTime.UtcNow);
     Console.WriteLine("Test");
-    Console.WriteLine("aaa");
+    Console.WriteLine("sss");
     Console.WriteLine("bbb");
     Console.WriteLine("ccc");
     await context.Response.WriteAsJsonAsync(new { message = "Test successful", time = DateTime.UtcNow });
-});
-
-app.MapPost("/api/getallitem", async (HttpContext context, MySqlConnection connection) =>
-{
-    Console.WriteLine("getallitem");
-    try
-    {
-        await connection.OpenAsync();
-        using var command = new MySqlCommand("select * from Item", connection);
-        using var dataReader = await command.ExecuteReaderAsync();
-        if (await dataReader.ReadAsync())
-        {
-            Console.WriteLine($"dataReader: {dataReader}");
-            await context.Response.WriteAsJsonAsync(new { success = true });
-        }
-        else
-        {
-            Console.WriteLine("else");
-        }
-    }
-    catch (JsonException)
-    {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new { success = false, message = "Invalid JSON format" });
-    }
-    catch (Exception exception)
-    {
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        await context.Response.WriteAsJsonAsync(new { success = false, message = $"錯誤: {exception.Message}", error = exception.Message });
-    }
 });
 
 app.MapPost("/api/checkverification", async (HttpContext context, MySqlConnection connection) =>
@@ -94,10 +103,9 @@ app.MapPost("/api/checkverification", async (HttpContext context, MySqlConnectio
 
         if (await dataReader.ReadAsync())
         {
-            Console.WriteLine($"dataReader: ${dataReader}");
             var row = new
             {
-                id = dataReader.GetInt32("id"),
+                id = dataReader.GetString("id"),
                 email = dataReader.GetString("email"),
                 code = dataReader.GetString("code")
             };

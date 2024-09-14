@@ -1,4 +1,0 @@
-D:\Desktop\Git\CSharpAPI\bin\Release\net8.0\linux-x64\publish\appsettings.Development.json
-D:\Desktop\Git\CSharpAPI\bin\Release\net8.0\linux-x64\publish\appsettings.json
-D:\Desktop\Git\CSharpAPI\bin\Release\net8.0\linux-x64\publish\C#Server.pdb
-D:\Desktop\Git\CSharpAPI\bin\Release\net8.0\linux-x64\publish\C#Server

@@ -1,24 +1,22 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Desktop\\Git\\CSharpAPI\\C#Server.csproj": {}
+    "D:\\Desktop\\Git\\CSharpAPI\\CSharpAPI.csproj": {}
   },
   "projects": {
-    "D:\\Desktop\\Git\\CSharpAPI\\C#Server.csproj": {
+    "D:\\Desktop\\Git\\CSharpAPI\\CSharpAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Desktop\\Git\\CSharpAPI\\C#Server.csproj",
-        "projectName": "C#Server",
-        "projectPath": "D:\\Desktop\\Git\\CSharpAPI\\C#Server.csproj",
+        "projectUniqueName": "D:\\Desktop\\Git\\CSharpAPI\\CSharpAPI.csproj",
+        "projectName": "CSharpAPI",
+        "projectPath": "D:\\Desktop\\Git\\CSharpAPI\\CSharpAPI.csproj",
         "packagesPath": "C:\\Users\\louis\\.nuget\\packages\\",
         "outputPath": "D:\\Desktop\\Git\\CSharpAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\louis\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
-        "originalTargetFrameworks": [
-          "net8.0"
-        ],
+        "originalTargetFrameworks": ["net8.0"],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
@@ -29,9 +27,7 @@
           }
         },
         "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
+          "warnAsError": ["NU1605"]
         },
         "restoreAuditProperties": {
           "enableAudit": "true",
