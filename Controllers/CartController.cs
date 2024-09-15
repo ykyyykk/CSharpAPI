@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
+
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
-using System.Data;
-
 namespace CSharpAPI.Controllers
 {
 	[ApiController]
@@ -92,6 +91,42 @@ namespace CSharpAPI.Controllers
 				}
 				//不要在這邊加NotFound 會讓前端Alert
 				return Ok(new { success = true, items = rows });
+			}
+			catch (JsonException)
+			{
+				Console.WriteLine("JsonException");
+				return BadRequest(new APIResponse(false, "Invalid JSON format"));
+			}
+			catch (Exception exception)
+			{
+				Console.WriteLine("Exception");
+				return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+			}
+		}
+
+		[HttpPost("addtocart")]
+		public async Task<IActionResult> AddToCart()
+		{
+			try
+			{
+				using var reader = new StreamReader(Request.Body);
+				var requestBody = await reader.ReadToEndAsync();
+				var json = JObject.Parse(requestBody);
+				string itemID = (string)json["itemID"];
+				string userID = (string)json["userID"];
+				string amount = (string)json["amount"];
+
+				await connection.OpenAsync();
+
+				using var command = new MySqlCommand("INSERT INTO Cart (itemID, userID, buyAmount) VALUES(@itemID, @userID, @buyAmount)", connection);
+
+				command.Parameters.AddWithValue("@itemID", itemID);
+				command.Parameters.AddWithValue("@userID", userID);
+				command.Parameters.AddWithValue("@buyAmount", amount);
+
+				await command.ExecuteNonQueryAsync();
+
+				return Ok(new APIResponse(true, "成功加入購物車"));
 			}
 			catch (JsonException)
 			{

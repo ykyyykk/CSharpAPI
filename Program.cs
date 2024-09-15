@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
-using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,9 +11,10 @@ builder.Services.AddCors(options =>
 });
 // builder.Services.AddMySqlDataSource在appsettings.json設定好了
 
+// 使用 Scoped 生命週期而不是 Transient 為了在同一個method 執行兩次MySqlCommand
 // 雖然說不加還是可以 但是可能會 生命週期管理 測試困難 一致性 性能問題
 //將Mysql注入DIContainer
-builder.Services.AddTransient(_ =>
+builder.Services.AddScoped(sp =>
     new MySqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
