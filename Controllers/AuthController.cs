@@ -138,7 +138,7 @@ namespace CSharpAPI.Controllers
                catch (Exception exception)
                {
                     Console.WriteLine("Exception");
-                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
+                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message} connection.string: ${connection.ConnectionString}" });
                }
           }
 

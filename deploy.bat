@@ -1,2 +1,0 @@
-@REM 這是註解 build 並且 從健行科大Windows 部署到 健行科大Linux
-dotnet publish -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true & scp bin/Release/net8.0/linux-x64/publish/CSharpAPI aaa@192.168.38.128:/var/www/csharp_server
