@@ -9,7 +9,9 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });
 });
-// builder.Services.AddMySqlDataSource在appsettings.json設定好了
+
+// 資料庫連線在appsettings.json設定好了
+// builder.Services.AddMySqlDataSource
 
 // 使用 Scoped 生命週期而不是 Transient 為了在同一個method 執行兩次MySqlCommand
 // 雖然說不加還是可以 但是可能會 生命週期管理 測試困難 一致性 性能問題
