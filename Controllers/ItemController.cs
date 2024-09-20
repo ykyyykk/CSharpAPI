@@ -6,8 +6,6 @@ using Newtonsoft.Json.Linq;
 namespace CSharpAPI.Controllers
 {
    [ApiController]
-   // 因為這一串必須將呼叫的api改成
-   // http://localhost:5000/api/Item/getallitem
    [Route("api")]
    public class ItemController : ControllerBase
    {
@@ -77,6 +75,7 @@ namespace CSharpAPI.Controllers
       [HttpPost("insertmultipleimages")]
       public async Task<IActionResult> InsertMultipleImages()
       {
+         Console.WriteLine("InsertMultipleImages");
          try
          {
             using var reader = new StreamReader(Request.Body);
@@ -101,10 +100,12 @@ namespace CSharpAPI.Controllers
          }
          catch (JsonException)
          {
+            Console.WriteLine("JsonException");
             return BadRequest(new { success = false, message = "Invalid JSON format" });
          }
          catch (Exception exception)
          {
+            Console.WriteLine(exception);
             return BadRequest(new { success = false, message = $"錯誤{exception.Message}" });
          }
       }
