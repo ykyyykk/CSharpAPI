@@ -21,6 +21,135 @@ namespace CSharpAPI.Controllers
          this.connection = connection;
       }
 
+      [HttpPost("addnewitem")]
+      public async Task<IActionResult> AddNewItem()
+      {
+         try
+         {
+            using var reader = new StreamReader(Request.Body);
+            var requestBody = await reader.ReadToEndAsync();
+            var json = JObject.Parse(requestBody);
+            string id = (string)json["id"];
+            string name = (string)json["name"];
+            string detail = (string)json["detail"];
+            string category = (string)json["category"];
+            string price = (string)json["price"];
+            string stock = (string)json["stock"];
+            string status = (string)json["status"];
+            string thumbnail = (string)json["thumbnail"];
+
+            await connection.OpenAsync();
+
+            using var command =
+            new MySqlCommand("INSERT INTO Item (id,name, detail, category, price, stock, status, thumbnail) VALUES(@id,@name,@detail,@category,@price,@stock,@status,@thumbnail)"
+            , connection);
+            command.Parameters.AddWithValue("@id", id);
+            command.Parameters.AddWithValue("@name", name);
+            command.Parameters.AddWithValue("@detail", detail);
+            command.Parameters.AddWithValue("@category", category);
+            command.Parameters.AddWithValue("@price", price);
+            command.Parameters.AddWithValue("@stock", stock);
+            command.Parameters.AddWithValue("@status", status);
+            command.Parameters.AddWithValue("@thumbnail", thumbnail);
+
+            int rowEffect = await command.ExecuteNonQueryAsync();
+
+            // 返回插入成功的结果
+            return Ok(new
+            {
+               success = true,
+               info = new
+               {
+                  changedRows = rowEffect
+               }
+            });
+         }
+         catch (JsonException)
+         {
+            return BadRequest(new { success = false, message = "Invalid JSON format" });
+         }
+         catch (Exception exception)
+         {
+            return BadRequest(new { success = false, message = $"錯誤{exception.Message}" });
+         }
+      }
+
+      [HttpPost("insertmultipleimages")]
+      public async Task<IActionResult> InsertMultipleImages()
+      {
+         try
+         {
+            using var reader = new StreamReader(Request.Body);
+            var requestBody = await reader.ReadToEndAsync();
+            var json = JObject.Parse(requestBody);
+            string itemID = (string)json["itemID"];
+            var imageUrls = json["imageUrls"].ToObject<List<string>>();
+
+            await connection.OpenAsync();
+
+            // 插入每个 imageUrl
+            foreach (var imageUrl in imageUrls)
+            {
+               using var command = new MySqlCommand("INSERT INTO Image (itemID, imageUrl) VALUES(@itemID, @imageUrl)", connection);
+               command.Parameters.AddWithValue("@itemID", itemID);
+               command.Parameters.AddWithValue("@imageUrl", imageUrl);
+               await command.ExecuteNonQueryAsync(); // 执行插入操作
+            }
+
+            // 返回插入成功的结果
+            return Ok(new { success = true });
+         }
+         catch (JsonException)
+         {
+            return BadRequest(new { success = false, message = "Invalid JSON format" });
+         }
+         catch (Exception exception)
+         {
+            return BadRequest(new { success = false, message = $"錯誤{exception.Message}" });
+         }
+      }
+
+      [HttpGet("item/{id}")]
+      public async Task<IActionResult> Item(string id)
+      {
+         try
+         {
+            await connection.OpenAsync();
+            using var command = new MySqlCommand("SELECT * FROM Item WHERE id = ?", connection);
+            command.Parameters.AddWithValue("@itemID", id);
+
+            using var dataReader = await command.ExecuteReaderAsync();
+
+            if (await dataReader.ReadAsync())
+            {
+               var row = new
+               {
+                  id = dataReader["id"],
+                  name = dataReader["name"],
+                  detail = dataReader["detail"],
+                  price = dataReader["price"],
+                  stock = dataReader["stock"],
+                  category = dataReader["category"],
+                  status = dataReader["status"],
+                  saleAmount = dataReader["saleAmount"],
+                  thumbnail = dataReader["thumbnail"],
+               };
+               return Ok(new { success = true, item = row });
+            }
+            return Ok(new APIResponse(false, "no item found"));
+         }
+         catch (JsonException)
+         {
+            Console.WriteLine("JsonException");
+            return BadRequest(new APIResponse(false, "Invalid JSON format"));
+         }
+         catch (Exception exception)
+         {
+            Console.WriteLine("Exception");
+            return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+         }
+      }
+
       //或者說 直接這樣 然後取消上面的[Route("api")]
       // [HttpGet("/api/getallitem")]
       [HttpGet("getallitem")]
@@ -84,10 +213,14 @@ namespace CSharpAPI.Controllers
             {
                var row = new
                {
-                  itemID = dataReader["itemID"],
                   imageUrl = dataReader["imageUrl"],
+                  itemID = dataReader["itemID"],
                };
                rows.Add(row);
+            }
+            if (rows.Count <= 0)
+            {
+               return Ok(new APIResponse(false, "no items found"));
             }
             return Ok(new { success = true, items = rows });
          }
@@ -176,10 +309,48 @@ namespace CSharpAPI.Controllers
             await connection.CloseAsync();
          }
       }
-      //TODO: /getitemimage
-      //TODO: /item/:id
-      //TODO: /insertmultipleimages
-      //TODO: /addnewitem
+
+      [HttpDelete("deletefromdatabase/{itemID}/{userID}")]
+      public async Task<IActionResult> DeleteFromDatabase(string itemID, string userID)
+      {
+         try
+         {
+            if (userID != "6")
+            {
+               return Ok(new APIResponse(false, "不是管理這不能下架"));
+            }
+
+            await connection.OpenAsync();
+
+            using var command =
+            new MySqlCommand("DELETE FROM Item WHERE id = @id", connection);
+
+            command.Parameters.AddWithValue("@id", itemID);
+
+            int rowEffect = await command.ExecuteNonQueryAsync();
+
+            if (rowEffect <= 0)
+            {
+               return Ok(new APIResponse(false, "找不到物品"));
+            }
+            return Ok(new
+            {
+               success = true,
+               affectedRows = rowEffect
+            });
+         }
+         catch (JsonException)
+         {
+            Console.WriteLine("JsonException");
+            return BadRequest(new APIResponse(false, "Invalid JSON format"));
+         }
+         catch (Exception exception)
+         {
+            Console.WriteLine("Exception");
+            return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+         }
+      }
+      //TODO: /uploadimage
    }
 }
 

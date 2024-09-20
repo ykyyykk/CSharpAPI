@@ -243,6 +243,31 @@ namespace CSharpAPI.Controllers
                     return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
                }
           }
+
+          [HttpDelete("deleteexpiresverification")]
+          public async Task<IActionResult> DeleteExpiresVerification()
+          {
+               try
+               {
+                    await connection.OpenAsync();
+
+                    using var checkCommand = new MySqlCommand("DELETE FROM Verification WHERE expiresAt <= @expiresAt", connection);
+                    checkCommand.Parameters.AddWithValue("@expiresAt", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+                    // 插入時改使用ExecuteNonQueryAsync
+                    await checkCommand.ExecuteNonQueryAsync();
+
+                    return Ok(new APIResponse(true, "過期驗證碼已刪除"));
+               }
+               catch (JsonException)
+               {
+                    return BadRequest(new { success = false, message = "Invalid JSON format" });
+               }
+               catch (Exception exception)
+               {
+                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
+               }
+          }
      }
 }
 

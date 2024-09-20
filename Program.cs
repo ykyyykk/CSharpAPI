@@ -1,3 +1,4 @@
+using Microsoft.Extensions.FileProviders;
 using MySqlConnector;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,11 +45,17 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapControllers();
 
+// 启用静态文件访问 為了將商品圖片直接上傳
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider("/var/www/html/img"),
+    RequestPath = "/img"
+});
+
 app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection) =>
 {
     // dotnet run 時會錯誤
-    Console.WriteLine("Test");
-    connection = new MySqlConnection("Server=34.82.250.51;Database=ShoppingWebsite;Uid=aaa;Pwd=louise87276;");
+    Console.WriteLine("Test1111");
     try
     {
         await connection.OpenAsync();
@@ -69,8 +76,9 @@ app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection)
             };
             var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-            await context.Response.WriteAsJsonAsync(new { message = $"connString: {connString}" });
-            // await context.Response.WriteAsJsonAsync(new { message = $"Test successful: {user}" });
+            // await context.Response.WriteAsJsonAsync(new { message = $"connString: {connString}" });
+            await context.Response.WriteAsJsonAsync(new { message = $"Test successful: {user}" });
+            return;
         }
         await context.Response.WriteAsJsonAsync(new APIResponse(false, $"找不到任何資料"));
     }
@@ -81,4 +89,5 @@ app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection)
     }
 });
 
-app.Run("http://*:5000");
+// app.Run("http://*:5000");一直被佔用改用3500
+app.Run("http://*:3500");

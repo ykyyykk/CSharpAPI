@@ -16,17 +16,11 @@ namespace CSharpAPI.Controllers
 			this.connection = connection;
 		}
 
-		[HttpDelete("deletefromcart")]
-		public async Task<IActionResult> DeleteFromCart()
+		[HttpDelete("deletefromcart/{itemID}/{userID}")]
+		public async Task<IActionResult> DeleteFromCart(string itemID, string userID)
 		{
 			try
 			{
-				using var reader = new StreamReader(Request.Body);
-				var requestBody = await reader.ReadToEndAsync();
-				var json = JObject.Parse(requestBody);
-				string itemID = (string)json["itemID"];
-				string userID = (string)json["userID"];
-
 				await connection.OpenAsync();
 
 				using var command = new MySqlCommand("DELETE FROM Cart WHERE itemID = @itemID AND userID = @userID", connection);
@@ -36,12 +30,19 @@ namespace CSharpAPI.Controllers
 
 				int rowEffect = await command.ExecuteNonQueryAsync();
 
-				if (rowEffect <= 0)
-				{
-					return NotFound(new APIResponse(false, "找不到物品"));
+				// if (rowEffect <= 0)
+				// {
+				// 	return NotFound(new APIResponse(false, "找不到物品"));
 
-				}
-				return Ok(new APIResponse(true, "成功刪除"));
+				// }
+				return Ok(new
+				{
+					success = true,
+					info = new
+					{
+						changedRows = rowEffect
+					}
+				});
 			}
 			catch (JsonException)
 			{
@@ -89,6 +90,10 @@ namespace CSharpAPI.Controllers
 					};
 					rows.Add(row);
 				}
+				// if (rows.Count <= 0)
+				// {
+				// 	return NotFound(new APIResponse(true, "找不到購物車物品"));
+				// }
 				//不要在這邊加NotFound 會讓前端Alert
 				return Ok(new { success = true, items = rows });
 			}
@@ -127,6 +132,42 @@ namespace CSharpAPI.Controllers
 				await command.ExecuteNonQueryAsync();
 
 				return Ok(new APIResponse(true, "成功加入購物車"));
+			}
+			catch (JsonException)
+			{
+				Console.WriteLine("JsonException");
+				return BadRequest(new APIResponse(false, "Invalid JSON format"));
+			}
+			catch (Exception exception)
+			{
+				Console.WriteLine("Exception");
+				return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+			}
+		}
+
+		[HttpPost("changecartamount")]
+		public async Task<IActionResult> ChangeCartAmount()
+		{
+			try
+			{
+				using var reader = new StreamReader(Request.Body);
+				var requestBody = await reader.ReadToEndAsync();
+				var json = JObject.Parse(requestBody);
+				string itemID = (string)json["itemID"];
+				string userID = (string)json["userID"];
+				string amount = (string)json["amount"];
+
+				await connection.OpenAsync();
+
+				using var command = new MySqlCommand("UPDATE Cart SET buyAmount = @buyAmount WHERE itemID = @itemID AND userID = @userID", connection);
+
+				command.Parameters.AddWithValue("@buyAmount", amount);
+				command.Parameters.AddWithValue("@itemID", itemID);
+				command.Parameters.AddWithValue("@userID", userID);
+
+				await command.ExecuteNonQueryAsync();
+
+				return Ok(new APIResponse(true, "成功修改購物車物品數量"));
 			}
 			catch (JsonException)
 			{
