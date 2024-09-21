@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
+using CSharpAPI.Utilities;
 
 namespace CSharpAPI.Controllers
 {
@@ -62,13 +63,9 @@ namespace CSharpAPI.Controllers
                }
             });
          }
-         catch (JsonException)
-         {
-            return BadRequest(new { success = false, message = "Invalid JSON format" });
-         }
          catch (Exception exception)
          {
-            return BadRequest(new { success = false, message = $"錯誤{exception.Message}" });
+            return ExceptionHandler.HandleException(exception);
          }
       }
 
@@ -98,15 +95,9 @@ namespace CSharpAPI.Controllers
             // 返回插入成功的结果
             return Ok(new { success = true });
          }
-         catch (JsonException)
-         {
-            Console.WriteLine("JsonException");
-            return BadRequest(new { success = false, message = "Invalid JSON format" });
-         }
          catch (Exception exception)
          {
-            Console.WriteLine(exception);
-            return BadRequest(new { success = false, message = $"錯誤{exception.Message}" });
+            return ExceptionHandler.HandleException(exception);
          }
       }
 
@@ -139,15 +130,9 @@ namespace CSharpAPI.Controllers
             }
             return Ok(new APIResponse(false, "no item found"));
          }
-         catch (JsonException)
-         {
-            Console.WriteLine("JsonException");
-            return BadRequest(new APIResponse(false, "Invalid JSON format"));
-         }
          catch (Exception exception)
          {
-            Console.WriteLine("Exception");
-            return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+            return ExceptionHandler.HandleException(exception);
          }
       }
 
@@ -182,13 +167,9 @@ namespace CSharpAPI.Controllers
             // return Ok(new APIResponse(true, "成功取得所有物品", rows));
             return Ok(new { success = true, items = rows });
          }
-         catch (JsonException)
-         {
-            return BadRequest(new { success = false, message = "Invalid JSON format" });
-         }
          catch (Exception exception)
          {
-            return BadRequest(new { success = false, message = $"錯誤{exception.Message}" });
+            return ExceptionHandler.HandleException(exception);
          }
       }
 
@@ -225,13 +206,9 @@ namespace CSharpAPI.Controllers
             }
             return Ok(new { success = true, items = rows });
          }
-         catch (JsonException)
-         {
-            return BadRequest(new { success = false, message = "Invalid JSON format" });
-         }
          catch (Exception exception)
          {
-            return BadRequest(new { success = false, message = $"錯誤{exception.Message}" });
+            return ExceptionHandler.HandleException(exception);
          }
       }
 
@@ -297,13 +274,9 @@ namespace CSharpAPI.Controllers
 
             return Ok(new APIResponse(true, "減少物品庫存 並 增加銷量"));
          }
-         catch (JsonException)
-         {
-            return BadRequest(new APIResponse(false, "Invalid JSON format"));
-         }
          catch (Exception exception)
          {
-            return BadRequest(new APIResponse(false, $"錯誤: {exception.Message}"));
+            return ExceptionHandler.HandleException(exception);
          }
          finally
          {
@@ -340,15 +313,9 @@ namespace CSharpAPI.Controllers
                affectedRows = rowEffect
             });
          }
-         catch (JsonException)
-         {
-            Console.WriteLine("JsonException");
-            return BadRequest(new APIResponse(false, "Invalid JSON format"));
-         }
          catch (Exception exception)
          {
-            Console.WriteLine("Exception");
-            return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+            return ExceptionHandler.HandleException(exception);
          }
       }
       //TODO: /uploadimage

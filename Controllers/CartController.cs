@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
-
+using CSharpAPI.Utilities;
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
+
 namespace CSharpAPI.Controllers
 {
 	[ApiController]
@@ -44,15 +45,9 @@ namespace CSharpAPI.Controllers
 					}
 				});
 			}
-			catch (JsonException)
-			{
-				Console.WriteLine("JsonException");
-				return BadRequest(new APIResponse(false, "Invalid JSON format"));
-			}
 			catch (Exception exception)
 			{
-				Console.WriteLine("Exception");
-				return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+				return ExceptionHandler.HandleException(exception);
 			}
 		}
 
@@ -97,15 +92,9 @@ namespace CSharpAPI.Controllers
 				//不要在這邊加NotFound 會讓前端Alert
 				return Ok(new { success = true, items = rows });
 			}
-			catch (JsonException)
-			{
-				Console.WriteLine("JsonException");
-				return BadRequest(new APIResponse(false, "Invalid JSON format"));
-			}
 			catch (Exception exception)
 			{
-				Console.WriteLine("Exception");
-				return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+				return ExceptionHandler.HandleException(exception);
 			}
 		}
 
@@ -133,15 +122,9 @@ namespace CSharpAPI.Controllers
 
 				return Ok(new APIResponse(true, "成功加入購物車"));
 			}
-			catch (JsonException)
-			{
-				Console.WriteLine("JsonException");
-				return BadRequest(new APIResponse(false, "Invalid JSON format"));
-			}
 			catch (Exception exception)
 			{
-				Console.WriteLine("Exception");
-				return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+				return ExceptionHandler.HandleException(exception);
 			}
 		}
 
@@ -169,15 +152,9 @@ namespace CSharpAPI.Controllers
 
 				return Ok(new APIResponse(true, "成功修改購物車物品數量"));
 			}
-			catch (JsonException)
-			{
-				Console.WriteLine("JsonException");
-				return BadRequest(new APIResponse(false, "Invalid JSON format"));
-			}
 			catch (Exception exception)
 			{
-				Console.WriteLine("Exception");
-				return StatusCode(500, new APIResponse(false, $"錯誤: {exception.Message}"));
+				return ExceptionHandler.HandleException(exception);
 			}
 		}
 	}

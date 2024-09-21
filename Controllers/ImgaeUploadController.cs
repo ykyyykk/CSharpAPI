@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using CSharpAPI.Utilities;
 
 namespace CSharpAPI.Controllers
 {
@@ -47,20 +48,9 @@ namespace CSharpAPI.Controllers
             // 返回上传成功的文件信息
             return Ok(new { success = true, message = "圖片上傳成功", files = uploadedFiles });
          }
-         catch (UnauthorizedAccessException ex)
+         catch (Exception exception)
          {
-            Console.WriteLine($"無權限寫入文件: {ex.Message}");
-            return StatusCode(500, new APIResponse(false, $"無權限寫入文件: {ex.Message}"));
-         }
-         catch (IOException ex)
-         {
-            Console.WriteLine($"文件IO錯誤: {ex.Message}");
-            return StatusCode(500, new APIResponse(false, $"文件IO錯誤: {ex.Message}"));
-         }
-         catch (Exception ex)
-         {
-            Console.WriteLine($"圖片上傳失敗: {ex.Message}");
-            return StatusCode(500, new APIResponse(false, $"圖片上傳失敗: {ex.Message}"));
+            return ExceptionHandler.HandleException(exception);
          }
       }
    }

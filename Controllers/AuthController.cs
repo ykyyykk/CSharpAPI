@@ -4,7 +4,7 @@ using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Mail;
 using System.Net;
-
+using CSharpAPI.Utilities;
 
 namespace CSharpAPI.Controllers
 {
@@ -69,15 +69,9 @@ namespace CSharpAPI.Controllers
                     return NotFound(new { success = false, message = "驗證碼錯誤" });
 
                }
-               catch (JsonException)
-               {
-                    Console.WriteLine("JsonException");
-                    return BadRequest(new { success = false, message = "Invalid JSON format" });
-               }
                catch (Exception exception)
                {
-                    Console.WriteLine("Exception");
-                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
+                    return ExceptionHandler.HandleException(exception);
                }
                // connection 是透過 依賴注入 所以不需要在每個api後面都加上finally
                // finally
@@ -130,15 +124,9 @@ namespace CSharpAPI.Controllers
                     return NotFound(new { success = false, message = "User not found" });
 
                }
-               catch (JsonException)
-               {
-                    Console.WriteLine("JsonException");
-                    return BadRequest(new { success = false, message = "Invalid JSON format" });
-               }
                catch (Exception exception)
                {
-                    Console.WriteLine("Exception");
-                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message} connection.string: ${connection.ConnectionString}" });
+                    return ExceptionHandler.HandleException(exception);
                }
           }
 
@@ -172,13 +160,9 @@ namespace CSharpAPI.Controllers
                     var userID = command.LastInsertedId;
                     return Ok(new { success = true, userID = userID });
                }
-               catch (JsonException)
-               {
-                    return BadRequest(new { success = false, message = "Invalid JSON format" });
-               }
                catch (Exception exception)
                {
-                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
+                    return ExceptionHandler.HandleException(exception);
                }
           }
 
@@ -234,13 +218,9 @@ namespace CSharpAPI.Controllers
 
                     return Ok(new { success = true, message = "驗證碼已發送" });
                }
-               catch (JsonException)
-               {
-                    return BadRequest(new { success = false, message = "Invalid JSON format" });
-               }
                catch (Exception exception)
                {
-                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
+                    return ExceptionHandler.HandleException(exception);
                }
           }
 
@@ -259,13 +239,9 @@ namespace CSharpAPI.Controllers
 
                     return Ok(new APIResponse(true, "過期驗證碼已刪除"));
                }
-               catch (JsonException)
-               {
-                    return BadRequest(new { success = false, message = "Invalid JSON format" });
-               }
                catch (Exception exception)
                {
-                    return StatusCode(500, new { success = false, message = $"錯誤{exception.Message}" });
+                    return ExceptionHandler.HandleException(exception);
                }
           }
      }
