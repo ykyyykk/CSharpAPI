@@ -48,6 +48,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// 會強制在http 加上 s
 app.UseHttpsRedirection();
 app.MapControllers();
 
