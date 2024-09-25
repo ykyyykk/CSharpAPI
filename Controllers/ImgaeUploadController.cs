@@ -8,7 +8,11 @@ namespace CSharpAPI.Controllers
    public class ImageUploadController : ControllerBase
    {
       // private readonly string _imageFolderPath = "/var/www/html/img"; // 圖片存放路徑 GCE的時候放在這邊
-      private readonly string _imageFolderPath = @"D:\Desktop\img"; // 圖片存放路徑 localhost的時候放這邊
+
+      // 圖片存放路徑 在家 localhost的時候放這邊
+      // private readonly string _imageFolderPath = @"D:\Desktop\img";
+      // 圖片存放路徑 學校 localhost的時候放這邊
+      private readonly string _imageFolderPath = @"C:\Desktop\img";
 
       [HttpPost("uploadimage")]
       public async Task<IActionResult> UploadImage(List<IFormFile> images)

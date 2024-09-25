@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using CSharpAPI.Utilities;
-using System.Text.Json;
 using Newtonsoft.Json.Linq;
 
 namespace CSharpAPI.Controllers
@@ -85,10 +84,7 @@ namespace CSharpAPI.Controllers
 					};
 					rows.Add(row);
 				}
-				// if (rows.Count <= 0)
-				// {
-				// 	return NotFound(new APIResponse(true, "找不到購物車物品"));
-				// }
+
 				//不要在這邊加NotFound 會讓前端Alert
 				return Ok(new { success = true, items = rows });
 			}
@@ -98,6 +94,7 @@ namespace CSharpAPI.Controllers
 			}
 		}
 
+		// TODO:這邊還沒測試
 		[HttpPost("addtocart")]
 		public async Task<IActionResult> AddToCart()
 		{
@@ -108,17 +105,26 @@ namespace CSharpAPI.Controllers
 				var json = JObject.Parse(requestBody);
 				string itemID = (string)json["itemID"];
 				string userID = (string)json["userID"];
-				string amount = (string)json["amount"];
+				int amount = (int)json["amount"];
 
 				await connection.OpenAsync();
 
-				using var command = new MySqlCommand("INSERT INTO Cart (itemID, userID, buyAmount) VALUES(@itemID, @userID, @buyAmount)", connection);
+				using var selectCommand = new MySqlCommand("SELECT * FROM Cart WHERE itemID = @itemID AND userID = @userID", connection);
+				using var insertCommand = new MySqlCommand("INSERT INTO Cart (itemID, userID, buyAmount) VALUES(@itemID, @userID, @buyAmount)", connection);
+				using var updateCommand = new MySqlCommand("UPDATE Cart SET buyAmount = @buyAmount WHERE itemID = @itemID AND userID = @userID", connection);
 
-				command.Parameters.AddWithValue("@itemID", itemID);
-				command.Parameters.AddWithValue("@userID", userID);
-				command.Parameters.AddWithValue("@buyAmount", amount);
+				insertCommand.Parameters.AddWithValue("@itemID", itemID);
+				insertCommand.Parameters.AddWithValue("@userID", userID);
+				insertCommand.Parameters.AddWithValue("@buyAmount", amount);
 
-				await command.ExecuteNonQueryAsync();
+				using var dataReader = await insertCommand.ExecuteReaderAsync();
+				if (await dataReader.ReadAsync())
+				{
+					// dataReader.GetOrdinal是dataReader的Index
+					amount += dataReader.GetInt32(dataReader.GetOrdinal("buyAmount"));
+					await updateCommand.ExecuteNonQueryAsync();
+				}
+				await insertCommand.ExecuteNonQueryAsync();
 
 				return Ok(new APIResponse(true, "成功加入購物車"));
 			}

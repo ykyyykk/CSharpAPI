@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
-using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using CSharpAPI.Utilities;
 
@@ -227,7 +226,8 @@ namespace CSharpAPI.Controllers
 
             // 查詢商品
             Item item = null;
-            //為了在同一個Method內執行兩次MySqlCommand
+
+            //為了在同一個Method內執行多次MySqlCommand 要這樣用using 包起來
             using (var command = new MySqlCommand("SELECT * FROM Item WHERE id = @id", connection))
             {
                command.Parameters.AddWithValue("@id", id);
@@ -277,10 +277,6 @@ namespace CSharpAPI.Controllers
          catch (Exception exception)
          {
             return ExceptionHandler.HandleException(exception);
-         }
-         finally
-         {
-            await connection.CloseAsync();
          }
       }
 
