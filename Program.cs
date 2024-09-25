@@ -3,9 +3,6 @@ using MySqlConnector;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 确保添加此行来加载 appsettings.json 文件
-// builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
@@ -14,17 +11,26 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 資料庫連線在appsettings.json設定好了
-// builder.Services.AddMySqlDataSource
-// "comment": {
-//     "DefaultConnection": "Server=34.82.250.51;Database=ShoppingWebsite;Uid=aaa;Pwd=louise87276;",
-//     "DefaultConnection": "Server=192.168.38.128;Database=ShoppingWebsite;Uid=aaa;Pwd=aaa;"
-//   },
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("CorsPolicy", policy =>
+//     {
+//         policy.WithOrigins(
+//              "https://ykyyykk231224.neocities.org",  // 允許你的前端網站
+//              "http://34.82.250.51",  // 允許你的伺服器
+//              "https://34.82.250.51"  // 允許你的伺服器
+//           )
+//           .AllowAnyHeader()
+//           .AllowAnyMethod();
+//     });
+// });
 
 // 使用 Scoped 生命週期而不是 Transient 為了在同一個method 執行兩次MySqlCommand
 // 雖然說不加還是可以 但是可能會 生命週期管理 測試困難 一致性 性能問題
 // 添加 Controller 支持
 builder.Services.AddControllers();
+
+// 資料庫連線在appsettings.json設定好了
 //將Mysql注入DIContainer
 builder.Services.AddScoped(sp =>
     new MySqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -89,5 +95,5 @@ app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection)
     }
 });
 
-// app.Run("http://*:5000");一直被佔用改用3500
+// app.Run("http://*:5000"); // 一直被佔用改用3500
 app.Run("http://*:3500");
