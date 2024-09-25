@@ -11,20 +11,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("CorsPolicy", policy =>
-//     {
-//         policy.WithOrigins(
-//              "https://ykyyykk231224.neocities.org",  // 允許你的前端網站
-//              "http://34.82.250.51",  // 允許你的伺服器
-//              "https://34.82.250.51"  // 允許你的伺服器
-//           )
-//           .AllowAnyHeader()
-//           .AllowAnyMethod();
-//     });
-// });
-
 // 使用 Scoped 生命週期而不是 Transient 為了在同一個method 執行兩次MySqlCommand
 // 雖然說不加還是可以 但是可能會 生命週期管理 測試困難 一致性 性能問題
 // 添加 Controller 支持
@@ -97,4 +83,4 @@ app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection)
 });
 
 // app.Run("http://*:5000"); // 一直被佔用改用3500
-app.Run("http://*:3500");
+app.Run("https://*:3500");
