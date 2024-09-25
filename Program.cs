@@ -1,7 +1,24 @@
 using Microsoft.Extensions.FileProviders;
 using MySqlConnector;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load certificate
+var certPath = "/etc/letsencrypt/live/www.louise.tw/fullchain.pem";
+var keyPath = "/etc/letsencrypt/live/www.louise.tw/privkey.pem";
+
+// Load the certificate from files
+var certificate = new X509Certificate2(certPath, string.Empty, X509KeyStorageFlags.MachineKeySet);
+
+// 加入 HTTPS 憑證的配置
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(443, listenOptions =>
+    {
+        listenOptions.UseHttps(certificate);
+    });
+});
 
 builder.Services.AddCors(options =>
 {
@@ -83,4 +100,8 @@ app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection)
 });
 
 // app.Run("http://*:5000"); // 一直被佔用改用3500
-app.Run("https://*:3500");
+// app.Run("https://*:3500");
+
+// 使用 SSL 憑證
+app.Urls.Add("https://*:3500");
+app.Run();
