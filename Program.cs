@@ -61,7 +61,7 @@ app.MapControllers();
 
 app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection) =>
 {
-    Console.WriteLine("Test1111");
+    Console.WriteLine("/api/test");
     try
     {
         await connection.OpenAsync();
@@ -90,7 +90,7 @@ app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection)
     }
     catch (Exception exception)
     {
-        Console.WriteLine("Exception");
+        Console.WriteLine($"Exception: {exception}");
         await context.Response.WriteAsJsonAsync(new APIResponse(false, $"錯誤{exception.Message}"));
     }
 });

@@ -140,10 +140,8 @@ namespace CSharpAPI.Controllers
       [HttpGet("getallitem")]
       public async Task<IActionResult> GetAllItem()
       {
-         Console.WriteLine(0);
          try
          {
-            Console.WriteLine(1);
             await connection.OpenAsync();
             using var command = new MySqlCommand("select * from Item", connection);
             using var dataReader = await command.ExecuteReaderAsync();
@@ -165,13 +163,11 @@ namespace CSharpAPI.Controllers
                };
                rows.Add(item);
             }
-            Console.WriteLine(2);
             // return Ok(new APIResponse(true, "成功取得所有物品", rows));
             return Ok(new { success = true, items = rows });
          }
          catch (Exception exception)
          {
-            Console.WriteLine(3);
             return ExceptionHandler.HandleException(exception);
          }
       }
