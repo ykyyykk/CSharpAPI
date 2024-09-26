@@ -6,6 +6,8 @@
         <RootNamespace>CSharpAPI</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
+        <PackageReference Include="Google.Apis.PeopleService.v1" Version="1.68.0.3359" />
         <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
