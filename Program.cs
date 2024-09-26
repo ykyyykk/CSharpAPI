@@ -28,12 +28,19 @@ builder.Services.AddSwaggerGen();
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     var config = builder.Configuration;
+    // serverOptions.Configure(config.GetSection("Kestrel"))
+    //     .Endpoint("Https", listenOptions =>
+    //     {
+    //         listenOptions.HttpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+    //     });
 
-    serverOptions.Configure(config.GetSection("Kestrel"))
-        .Endpoint("Https", listenOptions =>
-        {
-            listenOptions.HttpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
-        });
+    // Configure HTTP and HTTPS endpoints
+    serverOptions.Configure(config.GetSection("Kestrel"));
+    // Set SSL protocols for HTTPS
+    serverOptions.ConfigureHttpsDefaults(listenOptions =>
+    {
+        listenOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+    });
 });
 
 var app = builder.Build();
@@ -58,41 +65,5 @@ app.MapControllers();
 //     // FileProvider = new PhysicalFileProvider("/var/www/html/img"), //GEC的時候放在這邊
 //     RequestPath = "/img"
 // });
-
-app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection) =>
-{
-    Console.WriteLine("/api/test");
-    try
-    {
-        await connection.OpenAsync();
-        using var command = new MySqlCommand("SELECT * FROM User WHERE email = @email AND password = @password", connection);
-        command.Parameters.AddWithValue("@email", "e");
-        command.Parameters.AddWithValue("@password", "p");
-        using var dataReader = await command.ExecuteReaderAsync();
-
-        if (await dataReader.ReadAsync())
-        {
-            var user = new
-            {
-                id = dataReader["id"],
-                name = dataReader["name"],
-                phoneNumber = dataReader["phoneNumber"],
-                email = dataReader["email"],
-                password = dataReader["password"],
-            };
-            var connString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-            // await context.Response.WriteAsJsonAsync(new { message = $"connString: {connString}" });
-            await context.Response.WriteAsJsonAsync(new { message = $"Test successful: {user}" });
-            return;
-        }
-        await context.Response.WriteAsJsonAsync(new APIResponse(false, $"找不到任何資料"));
-    }
-    catch (Exception exception)
-    {
-        Console.WriteLine($"Exception: {exception}");
-        await context.Response.WriteAsJsonAsync(new APIResponse(false, $"錯誤{exception.Message}"));
-    }
-});
 
 app.Run();// Port改在 appsettings.json ConfigureKestrel 設定
