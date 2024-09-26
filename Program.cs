@@ -1,23 +1,8 @@
 using Microsoft.Extensions.FileProviders;
 using MySqlConnector;
-using System.Security.Cryptography.X509Certificates;
+using System.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// 打開的話沒辦法localhost設定
-// // 設定HTTPS憑證位置
-// var certPath = "/etc/letsencrypt/live/www.louise.tw/fullchain.pem";
-// var keyPath = "/etc/letsencrypt/live/www.louise.tw/privkey.pem";
-// // 取得HTTPS憑證位置
-// var certificate = new X509Certificate2(certPath, string.Empty, X509KeyStorageFlags.MachineKeySet);
-// // 加入 HTTPS 憑證的配置
-// builder.WebHost.ConfigureKestrel(serverOptions =>
-// {
-//     serverOptions.ListenAnyIP(443, listenOptions =>
-//     {
-//         listenOptions.UseHttps(certificate);
-//     });
-// });
 
 builder.Services.AddCors(options =>
 {
@@ -38,6 +23,18 @@ builder.Services.AddScoped(sp =>
     new MySqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// HTTPS 配置 在localhost 和 www.louise.tw都使用https
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    var config = builder.Configuration;
+
+    serverOptions.Configure(config.GetSection("Kestrel"))
+        .Endpoint("Https", listenOptions =>
+        {
+            listenOptions.HttpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+        });
+});
 
 var app = builder.Build();
 
@@ -98,9 +95,4 @@ app.MapPost("/api/test", async (HttpContext context, MySqlConnection connection)
     }
 });
 
-// app.Run("http://*:5000"); // 一直被佔用改用3500
-app.Run("https://*:3500");
-
-// 使用 SSL 憑證
-// app.Urls.Add("https://*:3500");
-// app.Run();
+app.Run();// Port改在 appsettings.json ConfigureKestrel 設定
