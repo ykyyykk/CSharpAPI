@@ -25,6 +25,7 @@ namespace CSharpAPI.Utilities
          {
             return new BadRequestObjectResult(new { success = false, message = "Invalid JSON format" });
          }
+         // Error 400代表參數錯誤 但還沒做
          // 可以根據需要添加更多的異常類型處理
          return new ObjectResult(new { success = false, message = $"錯誤: {exception.Message}" })
          {
