@@ -24,19 +24,13 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// HTTPS 配置 在localhost 和 www.louise.tw都使用https
+// HTTPS 配置 在localhost 使用http 和 www.louise.tw都使用https
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
+    // 取得appsettings.json
     var config = builder.Configuration;
-    // serverOptions.Configure(config.GetSection("Kestrel"))
-    //     .Endpoint("Https", listenOptions =>
-    //     {
-    //         listenOptions.HttpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
-    //     });
-
-    // Configure HTTP and HTTPS endpoints
+    // 取得appsettings.json Kestrel的部分
     serverOptions.Configure(config.GetSection("Kestrel"));
-    // Set SSL protocols for HTTPS
     serverOptions.ConfigureHttpsDefaults(listenOptions =>
     {
         listenOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
