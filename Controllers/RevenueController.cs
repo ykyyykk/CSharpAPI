@@ -3,7 +3,6 @@ using MySqlConnector;
 using CSharpAPI.Utilities;
 using Newtonsoft.Json.Linq;
 
-// TODO: 這邊都還沒試 在家試會比較方便
 namespace CSharpAPI.Controllers
 {
    [ApiController]
@@ -33,17 +32,14 @@ namespace CSharpAPI.Controllers
                var revenue = new
                {
                   id = dataReader["id"],
-                  name = dataReader["name"],
-                  phoneNumber = dataReader["phoneNumber"],
-                  email = dataReader["email"],
-                  password = dataReader["password"],
-                  totalPurchaseAmount = dataReader["totalPurchaseAmount"],
-                  totalPurchasePrice = dataReader["totalPurchasePrice"],
-
+                  // TODOWarning: 這裡讀取的時間跟NodeJs不一樣 
+                  date = dataReader["date"],
+                  value = dataReader["value"],
+                  itemID = dataReader["itemID"],
+                  category = dataReader["category"],
                };
                revenues.Add(revenue);
             }
-            // TODO: 這邊直接給List不知道會不會出錯
             return Ok(new { success = true, revenues });
          }
          catch (Exception exception)
@@ -76,14 +72,7 @@ namespace CSharpAPI.Controllers
             int rowEffect = await command.ExecuteNonQueryAsync();
 
             // 返回插入成功的结果
-            return Ok(new
-            {
-               success = true,
-               info = new
-               {
-                  changedRows = rowEffect
-               }
-            });
+            return Ok(new APIResponse(true, "成功新增營收"));
          }
          catch (Exception exception)
          {

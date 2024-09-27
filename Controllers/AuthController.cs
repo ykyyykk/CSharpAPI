@@ -245,7 +245,6 @@ namespace CSharpAPI.Controllers
 			}
 		}
 
-		// TODO:這邊還沒測試
 		[HttpPost("sendforgotpasswordcode")]
 		public async Task<IActionResult> SendForgotPasswordcode()
 		{
@@ -262,7 +261,6 @@ namespace CSharpAPI.Controllers
 					selectCommand.Parameters.AddWithValue("@email", email);
 					// 插入時改使用ExecuteNonQueryAsync
 					using var dataReader = await selectCommand.ExecuteReaderAsync();
-					// TODO: AI說找不到資料不會進入 還沒測試
 					if (!await dataReader.ReadAsync())
 					{
 						return Ok(new APIResponse(false, "該信箱從未被註冊過"));

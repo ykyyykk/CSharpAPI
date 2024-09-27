@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using CSharpAPI.Utilities;
+using Newtonsoft.Json.Linq;
 
-// TODO: 這邊都還沒試 在家試會比較方便
 namespace CSharpAPI.Controllers
 {
    [ApiController]
@@ -77,6 +77,46 @@ namespace CSharpAPI.Controllers
                success = true,
                affectedRows = rowEffect
             });
+         }
+         catch (Exception exception)
+         {
+            return ExceptionHandler.HandleException(exception);
+         }
+      }
+
+      [HttpPost("updateuserpriceamount")]
+      public async Task<IActionResult> UpdateUserPriceAmount()
+      {
+         try
+         {
+            using var reader = new StreamReader(Request.Body);
+            var requestBody = await reader.ReadToEndAsync();
+            var json = JObject.Parse(requestBody);
+            string userID = (string)json["userID"];
+            string amount = (string)json["amount"];
+            string price = (string)json["price"];
+
+            await connection.OpenAsync();
+
+            using var command = new MySqlCommand(@"
+            UPDATE User
+            SET totalPurchaseAmount = ?,
+            totalPurchasePrice = ?
+            WHERE id = ?",
+            connection);
+
+            // 注意順序
+            command.Parameters.AddWithValue("?", amount);
+            command.Parameters.AddWithValue("?", price);
+            command.Parameters.AddWithValue("?", userID);
+
+            int rowEffect = await command.ExecuteNonQueryAsync();
+
+            if (rowEffect <= 0)
+            {
+               return Ok(new APIResponse(false, "找不到會員"));
+            }
+            return Ok(new APIResponse(true, "成功修改會員購買歷史紀錄"));
          }
          catch (Exception exception)
          {

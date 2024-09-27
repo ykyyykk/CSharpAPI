@@ -94,7 +94,6 @@ namespace CSharpAPI.Controllers
 			}
 		}
 
-		// TODO:這邊還沒測試
 		[HttpPost("addtocart")]
 		public async Task<IActionResult> AddToCart()
 		{
@@ -108,25 +107,56 @@ namespace CSharpAPI.Controllers
 				int amount = (int)json["amount"];
 
 				await connection.OpenAsync();
+				// 另一個多次執行的方式
+				using var transaction = await connection.BeginTransactionAsync();
 
-				using var selectCommand = new MySqlCommand("SELECT * FROM Cart WHERE itemID = @itemID AND userID = @userID", connection);
-				using var insertCommand = new MySqlCommand("INSERT INTO Cart (itemID, userID, buyAmount) VALUES(@itemID, @userID, @buyAmount)", connection);
-				using var updateCommand = new MySqlCommand("UPDATE Cart SET buyAmount = @buyAmount WHERE itemID = @itemID AND userID = @userID", connection);
-
-				insertCommand.Parameters.AddWithValue("@itemID", itemID);
-				insertCommand.Parameters.AddWithValue("@userID", userID);
-				insertCommand.Parameters.AddWithValue("@buyAmount", amount);
-
-				using var dataReader = await insertCommand.ExecuteReaderAsync();
-				if (await dataReader.ReadAsync())
+				try
 				{
-					// dataReader.GetOrdinal是dataReader的Index
-					amount += dataReader.GetInt32(dataReader.GetOrdinal("buyAmount"));
-					await updateCommand.ExecuteNonQueryAsync();
-				}
-				await insertCommand.ExecuteNonQueryAsync();
+					using var selectCommand = new MySqlCommand(
+					@"SELECT buyAmount 
+					  FROM Cart 
+					  WHERE itemID = ? AND userID = ?",
+					  connection,
+					  transaction);
+					selectCommand.Parameters.AddWithValue("?", itemID);
+					selectCommand.Parameters.AddWithValue("?", userID);
 
-				return Ok(new APIResponse(true, "成功加入購物車"));
+					var existingAmount = await selectCommand.ExecuteScalarAsync();
+
+					if (existingAmount != null)
+					{
+						// 如果記錄存在，更新數量
+						int newAmount = Convert.ToInt32(existingAmount) + amount;
+						using var updateCommand = new MySqlCommand(
+							@"UPDATE Cart
+						  SET buyAmount = ? 
+						  WHERE itemID = ? AND userID = ?", connection, transaction);
+						updateCommand.Parameters.AddWithValue("?", newAmount);
+						updateCommand.Parameters.AddWithValue("?", itemID);
+						updateCommand.Parameters.AddWithValue("?", userID);
+						await updateCommand.ExecuteNonQueryAsync();
+					}
+					else
+					{
+						// 如果記錄不存在，插入新記錄
+						using var insertCommand = new MySqlCommand(
+							@"INSERT INTO Cart
+						 (itemID, userID, buyAmount)
+						  VALUES(?, ?, ?)", connection, transaction);
+						insertCommand.Parameters.AddWithValue("@itemID", itemID);
+						insertCommand.Parameters.AddWithValue("@userID", userID);
+						insertCommand.Parameters.AddWithValue("@buyAmount", amount);
+						await insertCommand.ExecuteNonQueryAsync();
+					}
+
+					await transaction.CommitAsync();
+					return Ok(new APIResponse(true, "成功加入購物車"));
+				}
+				catch
+				{
+					await transaction.RollbackAsync();
+					throw;
+				}
 			}
 			catch (Exception exception)
 			{
