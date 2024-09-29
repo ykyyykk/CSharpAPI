@@ -53,11 +53,11 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 // 启用静态文件访问 為了將商品圖片直接上傳
-// app.UseStaticFiles(new StaticFileOptions
-// {
-//     FileProvider = new PhysicalFileProvider(@"D:\Desktop\img"), //localhost的時候放在這邊
-//     // FileProvider = new PhysicalFileProvider("/var/www/html/img"), //GEC的時候放在這邊
-//     RequestPath = "/img"
-// });
+app.UseStaticFiles(new StaticFileOptions
+{
+    // FileProvider = new PhysicalFileProvider(@"D:\Desktop\img"), //localhost的時候放在這邊
+    FileProvider = new PhysicalFileProvider("/var/www/html/img"), //GCE的時候放在這邊
+    RequestPath = "/img"
+});
 
 app.Run();// Port改在 appsettings.json ConfigureKestrel 設定

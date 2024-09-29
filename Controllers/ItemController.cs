@@ -201,7 +201,7 @@ namespace CSharpAPI.Controllers
             }
             if (rows.Count <= 0)
             {
-               return Ok(new APIResponse(false, "no items found"));
+               return Ok(new APIResponse(false, "no image found"));
             }
             return Ok(new { success = true, items = rows });
          }
@@ -210,6 +210,9 @@ namespace CSharpAPI.Controllers
             return ExceptionHandler.HandleException(exception);
          }
       }
+      // TODO: 目前還沒有商品下架功能
+      // TODO: 不知道為什麼 重新整理沒辦法回到原來的網頁
+      // TODO: 圖片高度太低 在首頁的格子會不一樣大
 
       [HttpPost("purchaseitem")]
       public async Task<IActionResult> PurchaseItem()
@@ -314,7 +317,6 @@ namespace CSharpAPI.Controllers
             return ExceptionHandler.HandleException(exception);
          }
       }
-      //TODO: /uploadimage
    }
 }
 
