@@ -60,23 +60,4 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/img"
 });
 
-app.UseRouting();
-// 捕捉404錯誤並重定向到index.html
-app.Use(async (context, next) =>
-{
-    await next();
-
-    if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value))
-    {
-        context.Request.Path = "/index.html";
-        await next();
-    }
-});
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllerRoute(
-        name: "default",
-        pattern: "{controller}/{action=Index}/{id?}");
-});
-
 app.Run();// Port改在 appsettings.json ConfigureKestrel 設定
