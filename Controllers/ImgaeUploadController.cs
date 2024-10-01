@@ -59,5 +59,3 @@ namespace CSharpAPI.Controllers
       }
    }
 }
-
-//TODO: /uploadimage
