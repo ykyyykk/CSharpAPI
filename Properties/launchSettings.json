@@ -13,9 +13,8 @@
       "commandName": "Project",
       "hotReloadEnabled": true,
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5001;http://localhost:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Testing"
       }
     },
     "http": {
@@ -25,7 +24,7 @@
       "launchUrl": "swagger",
       "applicationUrl": "http://localhost:5276",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Testing"
       }
     },
     "https": {
@@ -35,7 +34,7 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7022;http://localhost:5276",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Testing"
       }
     },
     "IIS Express": {
@@ -43,7 +42,7 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Testing"
       }
     }
   }

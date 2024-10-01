@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using CSharpAPI.Utilities;
 using Newtonsoft.Json.Linq;
+using System.Data;
 
 namespace CSharpAPI.Controllers
 {
@@ -73,6 +74,33 @@ namespace CSharpAPI.Controllers
 
             // 返回插入成功的结果
             return Ok(new APIResponse(true, "成功新增營收"));
+         }
+         catch (Exception exception)
+         {
+            return ExceptionHandler.HandleException(exception);
+         }
+      }
+
+      [HttpGet("itemssoldamount")]
+      public async Task<IActionResult> ItemsSoldAmount()
+      {
+         var salesMap = new Dictionary<long, int>();
+         try
+         {
+            await connection.OpenAsync();
+            using var command =
+            new MySqlCommand(@"SELECT itemID, COUNT(*) as soldAmount
+                               FROM Revenue
+                               GROUP BY itemID",
+                               connection);
+            using var dataReader = await command.ExecuteReaderAsync();
+            while (await dataReader.ReadAsync())
+            {
+               var itemId = dataReader.GetInt64("itemID");
+               var soldAmount = dataReader.GetInt32("soldAmount");
+               salesMap[itemId] = soldAmount;
+            }
+            return Ok(new { success = true, sales = salesMap });
          }
          catch (Exception exception)
          {

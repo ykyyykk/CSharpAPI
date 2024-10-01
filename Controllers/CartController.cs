@@ -66,6 +66,7 @@ namespace CSharpAPI.Controllers
 
 				using var dataReader = await command.ExecuteReaderAsync();
 
+				// TODO: 不懂為什麼這邊的postman結果和js是一樣的 但是網頁顯示的結果卻是不一樣的
 				var rows = new List<dynamic>();
 				while (await dataReader.ReadAsync())
 				{

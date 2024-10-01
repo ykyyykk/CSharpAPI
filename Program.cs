@@ -52,11 +52,16 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapControllers();
 
-// 启用静态文件访问 為了將商品圖片直接上傳
+Console.WriteLine(app.Environment.EnvironmentName);
+string filePath = app.Environment.EnvironmentName == "Testing"
+? "/Users/wangshihchieh/Desktop/SourceTree/CSharpAPI"
+: "/var/www/html/img";
+Console.WriteLine(filePath);
+// 設定圖片相對位置 註解掉會讓前端無法透過/img/...取得圖片 
 app.UseStaticFiles(new StaticFileOptions
 {
     // FileProvider = new PhysicalFileProvider(@"D:\Desktop\img"), //localhost的時候放在這邊
-    FileProvider = new PhysicalFileProvider("/var/www/html/img"), //GCE的時候放在這邊
+    FileProvider = new PhysicalFileProvider(filePath), //GCE的時候放在這邊
     RequestPath = "/img"
 });
 

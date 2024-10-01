@@ -33,55 +33,101 @@ namespace CSharpAPI.Controllers
 		[HttpPost("checkverification")]
 		public async Task<IActionResult> CheckVerification()
 		{
+			using var reader = new StreamReader(Request.Body);
+			var requestBody = await reader.ReadToEndAsync();
+			var json = JObject.Parse(requestBody);
+			var email = (string)json["email"];
+			var verificationCode = (string)json["verificationCode"];
+
+			const string sql = "SELECT * FROM Verification WHERE email = ? AND code = ?";
+			const string deleteSql = "DELETE FROM Verification WHERE email = ?";
+
 			try
 			{
-				// 读取请求体
-				using var reader = new StreamReader(Request.Body);
-				var requestBody = await reader.ReadToEndAsync();
-				Console.WriteLine($"requestBody: {requestBody}");
-
-				// 反序列化 JSON 数据 确保大小写不敏感
-				var request = JsonSerializer.Deserialize<VerificationRequest>(requestBody, new JsonSerializerOptions
-				{
-					PropertyNameCaseInsensitive = true
-				});
-
 				await connection.OpenAsync();
 
-				using var command = new MySqlCommand("SELECT * FROM Verification WHERE email = @email AND code = @code", connection);
+				// Check verification
+				using var command = new MySqlCommand(sql, connection);
+				command.Parameters.AddWithValue("?", email);
+				command.Parameters.AddWithValue("?", verificationCode);
 
-				command.Parameters.AddWithValue("@email", request.email);
-				command.Parameters.AddWithValue("@code", request.verificationCode);
-
-				Console.WriteLine($"request.Email: {request.email}");
-				Console.WriteLine($"request.VerificationCode: {request.verificationCode}");
 				using var dataReader = await command.ExecuteReaderAsync();
-
-				if (await dataReader.ReadAsync())
+				if (!await dataReader.ReadAsync())
 				{
-					var row = new
-					{
-						email = dataReader["email"],
-						code = dataReader["code"],
-					};
-					return Ok(new { success = true, row = row });
+					return Ok(new { success = false, message = "驗證碼錯誤" });
 				}
-				return NotFound(new { success = false, message = "驗證碼錯誤" });
+				dataReader.Close();
 
+				// Delete verification
+				command.CommandText = deleteSql;
+				command.Parameters.Clear();
+				command.Parameters.AddWithValue("?", email);
+				await command.ExecuteNonQueryAsync();
+
+				return Ok(new { success = true });
 			}
 			catch (Exception exception)
 			{
 				return ExceptionHandler.HandleException(exception);
 			}
-			// connection 是透過 依賴注入 所以不需要在每個api後面都加上finally
-			// finally
-			// {
-			//      // 确保数据库连接关闭
-			//      if (connection.State == System.Data.ConnectionState.Open)
-			//      {
-			//           await connection.CloseAsync();
-			//      }
-			// }
+		}
+
+
+		[HttpPost("checkforgotpassword")]
+		public async Task<IActionResult> CheckForgotPassword()
+		{
+			using var reader = new StreamReader(Request.Body);
+			var requestBody = await reader.ReadToEndAsync();
+			var json = JObject.Parse(requestBody);
+			var email = (string)json["email"];
+			var verificationCode = (string)json["password"];
+
+			const string sql = "SELECT * FROM Verification WHERE email = @email AND code = @code";
+			const string selectSql = "SELECT password FROM User WHERE email = @email";
+			const string deleteSql = "DELETE FROM Verification WHERE email = @email";
+
+			try
+			{
+				await connection.OpenAsync();
+
+				// Check verification
+				using var command = new MySqlCommand(sql, connection);
+				command.Parameters.AddWithValue("@email", email);
+				command.Parameters.AddWithValue("@code", verificationCode);
+
+				using var dataReader = await command.ExecuteReaderAsync();
+				if (!await dataReader.ReadAsync())
+				{
+					return Ok(new { success = false, message = "驗證碼錯誤" });
+				}
+				dataReader.Close();
+
+				// Check user
+				command.CommandText = selectSql;
+				command.Parameters.Clear();
+				command.Parameters.AddWithValue("@email", email);
+
+				using var selectReader = await command.ExecuteReaderAsync();
+				if (!await selectReader.ReadAsync())
+				{
+					return Ok(new { success = false, message = "找不到信箱" });
+				}
+
+				var password = selectReader["password"].ToString();
+				selectReader.Close();
+
+				// Delete verification
+				command.CommandText = deleteSql;
+				command.Parameters.Clear();
+				command.Parameters.AddWithValue("@email", email);
+				await command.ExecuteNonQueryAsync();
+
+				return Ok(new { success = true, row = new { password } });
+			}
+			catch (Exception exception)
+			{
+				return ExceptionHandler.HandleException(exception);
+			}
 		}
 
 		[HttpPost("login")]
@@ -194,13 +240,16 @@ namespace CSharpAPI.Controllers
 				var random = new Random();
 				int verificationCode = random.Next(100000, 999999);
 
-				using var insertCommand = new MySqlCommand("INSERT INTO Verification (email, code, createdAt, expiresAt) VALUES(@email, @code, @createdAt, expiresAt)", connection);
+				using var insertCommand =
+				new MySqlCommand(@"INSERT INTO Verification
+										(email, code, createdAt, expiresAt) 
+										VALUES(?, ?, ?, ?)", connection);
 				var createdAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 				var expiresAt = createdAt + 300000;
-				insertCommand.Parameters.AddWithValue("@email", email);
-				insertCommand.Parameters.AddWithValue("@code", verificationCode.ToString());
-				insertCommand.Parameters.AddWithValue("@createdAt", createdAt);
-				insertCommand.Parameters.AddWithValue("@expiresAt", expiresAt);
+				insertCommand.Parameters.AddWithValue("?", email);
+				insertCommand.Parameters.AddWithValue("?", verificationCode.ToString());
+				insertCommand.Parameters.AddWithValue("?", createdAt);
+				insertCommand.Parameters.AddWithValue("?", expiresAt);
 
 				await insertCommand.ExecuteNonQueryAsync();
 
