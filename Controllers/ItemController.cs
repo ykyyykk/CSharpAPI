@@ -240,7 +240,7 @@ namespace CSharpAPI.Controllers
                {
                   item = new Item()
                   {
-                     id = (string)dataReader["id"],
+                     id = Convert.ToInt64(dataReader["id"]),
                      name = (string)dataReader["name"],
                      detail = (string)dataReader["detail"],
                      price = Convert.ToInt32(dataReader["price"]),
@@ -322,7 +322,7 @@ namespace CSharpAPI.Controllers
 
 public class Item
 {
-   public string id;
+   public long id;
    public string name;
    public string detail;
    public int price;
