@@ -4,7 +4,6 @@ using Google.Apis.Services;
 using Microsoft.AspNetCore.Mvc;
 using CSharpAPI.Utilities;
 using Google.Apis.Auth.OAuth2;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace CSharpAPI.Controllers

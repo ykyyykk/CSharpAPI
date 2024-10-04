@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using CSharpAPI.Utilities;
 using Newtonsoft.Json.Linq;
-using System.Data;
 
 namespace CSharpAPI.Controllers
 {
