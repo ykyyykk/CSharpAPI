@@ -52,11 +52,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapControllers();
 
-Console.WriteLine(app.Environment.EnvironmentName);
+Console.WriteLine($"app.Environment.EnvironmentName: {app.Environment.EnvironmentName}");
 string filePath = app.Environment.EnvironmentName == "Testing"
 ? "/Users/wangshihchieh/Desktop/SourceTree/CSharpAPI"
 : "/var/www/html/img";
-Console.WriteLine(filePath);
+Console.WriteLine($"filePath: {filePath}");
 // 設定圖片相對位置 註解掉會讓前端無法透過/img/...取得圖片 
 app.UseStaticFiles(new StaticFileOptions
 {

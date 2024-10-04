@@ -107,7 +107,7 @@ namespace CSharpAPI.Controllers
          {
             await connection.OpenAsync();
             using var command = new MySqlCommand("SELECT * FROM Item WHERE id = ?", connection);
-            command.Parameters.AddWithValue("@itemID", id);
+            command.Parameters.AddWithValue("?", id);
 
             using var dataReader = await command.ExecuteReaderAsync();
 
