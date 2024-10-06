@@ -23,6 +23,7 @@ namespace CSharpAPI.Controllers
       {
          try
          {
+            // TODO: 還沒有更新Revenue
             if (ecpayReturn["RtnCode"] != "1")
             {
                Console.WriteLine("付款失敗");
