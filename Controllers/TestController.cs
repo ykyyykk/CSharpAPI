@@ -58,24 +58,5 @@ namespace CSharpAPI.Controllers
             return ExceptionHandler.HandleException(exception);
          }
       }
-
-
-      [HttpPost("testecpay")]
-      public async Task<IActionResult> ECPay()
-      {
-         Console.WriteLine("/api/test");
-         try
-         {
-            return Ok(new
-            {
-               success = true,
-               message = $"1|OK",
-            });
-         }
-         catch (Exception exception)
-         {
-            return ExceptionHandler.HandleException(exception);
-         }
-      }
    }
 }

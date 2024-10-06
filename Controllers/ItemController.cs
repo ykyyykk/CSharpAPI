@@ -10,13 +10,15 @@ namespace CSharpAPI.Controllers
    public class ItemController : ControllerBase
    {
       private readonly MySqlConnection connection;
+      // private readonly ItemService itemService;
 
       // 使用了builder.Services.AddControllers()
       // 並且在 app.MapControllers() 中啟用了控制器路由
       // 框架應該會自動註冊和調用 ItemController 所以不需要new
-      public ItemController(MySqlConnection connection)
+      public ItemController(MySqlConnection connection/*, ItemService itemService*/)
       {
          this.connection = connection;
+         // this.itemService = itemService;
       }
 
       [HttpPost("addnewitem")]
@@ -210,9 +212,6 @@ namespace CSharpAPI.Controllers
             return ExceptionHandler.HandleException(exception);
          }
       }
-      // TODO: 目前還沒有商品下架功能
-      // TODO: 不知道為什麼 重新整理沒辦法回到原來的網頁
-      // TODO: 圖片高度太低 在首頁的格子會不一樣大
 
       [HttpPost("purchaseitem")]
       public async Task<IActionResult> PurchaseItem()
@@ -224,6 +223,9 @@ namespace CSharpAPI.Controllers
             var json = JObject.Parse(requestBody);
             var id = (string)json["id"];
             int amount = (int)json["amount"];
+
+            // var (success, message) = await itemService.PurchaseItemAsync(id, amount);
+            // return Ok(new APIResponse(success, message));
 
             await connection.OpenAsync();
 

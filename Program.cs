@@ -16,6 +16,7 @@ builder.Services.AddCors(options =>
 // 雖然說不加還是可以 但是可能會 生命週期管理 測試困難 一致性 性能問題
 // 添加 Controller 支持
 builder.Services.AddControllers();
+// builder.Services.AddScoped<IItemService, ItemService>();
 
 // 資料庫連線在appsettings.json設定好了
 //將Mysql注入DIContainer
@@ -42,14 +43,11 @@ var app = builder.Build();
 //使用Cors跨域設定
 app.UseCors("CorsPolicy");
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
+app.UseSwagger();
+app.UseSwaggerUI();
 // 會強制在http 加上 s
 app.UseHttpsRedirection();
+
 app.MapControllers();
 
 Console.WriteLine($"app.Environment.EnvironmentName: {app.Environment.EnvironmentName}");

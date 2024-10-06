@@ -10,60 +10,55 @@ namespace CSharpAPI.Controllers
    public class ECPayController : ControllerBase
    {
       private readonly MySqlConnection connection;
+      // private readonly ItemService itemService;
 
-      public ECPayController(MySqlConnection connection)
+      public ECPayController(MySqlConnection connection /*, ItemService itemService */)
       {
          this.connection = connection;
+         // this.itemService = itemService;
       }
 
       [HttpPost("return")]
-      public async Task<IActionResult> Return()
+      public async Task<IActionResult> Return([FromForm] IFormCollection ecpayReturn)
       {
-         Console.WriteLine("Return=============");
          try
          {
-            using var reader = new StreamReader(Request.Body);
-            var requestBody = await reader.ReadToEndAsync();
-            Console.WriteLine($"Request Body Content: {requestBody}");
-            // MerchantID = 3002607 &
-            // MerchantTradeNo = od20241004140451036 &
-            // PaymentDate = 2024 % 2F10 % 2F04 + 14 % 3A05 % 3A01 &
-            // PaymentType = WebATM_TAISHIN & PaymentTypeChargeFee = 2 &
-            // RtnCode = 1 &
-            // RtnMsg = Succeeded &
-            // SimulatePaid = 0 &
-            // StoreID = aaa &
-            // TradeAmt = 199 &
-            // TradeDate = 2024 % 2F10 % 2F04 + 14 % 3A04 % 3A51 &
-            // TradeNo = 2410041404515154 &
-            // CheckMacValue = 42EE1FAA8177C0B950FBA4EF6CEF6D0C12E7E14EB57F113C72BF779EB111B504
-
-            // 解析 form-urlencoded 格式的資料
-            var formData = System.Web.HttpUtility.ParseQueryString(requestBody);
-            var merchantID = formData["MerchantID"];
-            var merchantTradeNo = formData["MerchantTradeNo"];
-            var checkMacValue = formData["CheckMacValue"];
-
-            await connection.OpenAsync();
-            using var command = new MySqlCommand("SELECT * FROM ECPay WHERE checkMacValue = ?", connection);
-            command.Parameters.AddWithValue("?", formData["CheckMacValue"]);
-            using var dataReader = await command.ExecuteReaderAsync();
-
-            if (await dataReader.ReadAsync())
+            if (ecpayReturn["RtnCode"] != "1")
             {
-               return new ContentResult
-               {
-                  Content = "1|OK",
-                  ContentType = "text/plain",
-                  StatusCode = 200
-               };
+               Console.WriteLine("付款失敗");
+               return Ok(new APIResponse(false, "付款失敗"));
             }
 
-            //這樣寫會Error
-            // return Ok("1|OK", "text/plain");
-            // 會顯示1|OK但不知道 之後要幹嘛
-            // return Ok("1|OK");
-            return Ok(new APIResponse(false, "找不到相同的MacValue"));
+            await connection.OpenAsync();
+            using var command = new MySqlCommand(
+               @"UPDATE ECPay
+                 SET paid = @paid
+                 WHERE merchantTradeNo = @merchantTradeNo;",
+               connection);
+
+            // 不懂為什麼不能直接用 ecpayReturn["MerchantTradeNo"]
+            // Parameter type StringValues is not supported; see https://fl.vu/mysql-param-type. Value: od20241006130526525"
+            string merchantTradeNo = ecpayReturn["MerchantTradeNo"];
+            command.Parameters.AddWithValue("@paid", 1);
+            command.Parameters.AddWithValue("@merchantTradeNo", merchantTradeNo);
+
+            int rowEffect = await command.ExecuteNonQueryAsync();
+
+            if (rowEffect <= 0)
+            {
+               return NotFound(new APIResponse(false, "找不到訂單"));
+            }
+
+            string itemId = ecpayReturn["CustomField1"];
+            int amount = int.Parse(ecpayReturn["CustomField2"]);
+
+            // var (success, message) = await itemService.PurchaseItemAsync(itemId, amount);
+            // if (!success)
+            // {
+            //    return Ok(new APIResponse(false, message));
+            // }
+
+            return Ok("1|OK");
          }
          catch (Exception exception)
          {
@@ -84,18 +79,20 @@ namespace CSharpAPI.Controllers
             var totalAmount = (string)json["totalAmount"];
             var itemName = (string)json["itemName"];
             var checkMacValue = (string)json["checkMacValue"];
+            var merchantTradeNo = (string)json["merchantTradeNo"];
 
             await connection.OpenAsync();
             using var command = new MySqlCommand(
                @"INSERT INTO ECPay
-                (paymentType, tradeDate, totalAmount, itemName, checkMacValue)
-               VALUES(?,?,?,?,?)",
+                (paymentType, tradeDate, totalAmount, itemName, checkMacValue, merchantTradeNo)
+               VALUES(?,?,?,?,?,?)",
                connection);
             command.Parameters.AddWithValue("?", paymentType);
             command.Parameters.AddWithValue("?", tradeDate);
             command.Parameters.AddWithValue("?", totalAmount);
             command.Parameters.AddWithValue("?", itemName);
             command.Parameters.AddWithValue("?", checkMacValue);
+            command.Parameters.AddWithValue("?", merchantTradeNo);
             await command.ExecuteNonQueryAsync();
 
             return Ok(new APIResponse(true, ""));
