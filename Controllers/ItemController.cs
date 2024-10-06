@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using Newtonsoft.Json.Linq;
 using CSharpAPI.Utilities;
+using CSharpAPI.Services.Implementations;
 
 namespace CSharpAPI.Controllers
 {
@@ -10,14 +11,15 @@ namespace CSharpAPI.Controllers
    public class ItemController : ControllerBase
    {
       private readonly MySqlConnection connection;
-      // private readonly ItemService itemService;
+      private readonly ItemService itemService;
 
       // 使用了builder.Services.AddControllers()
       // 並且在 app.MapControllers() 中啟用了控制器路由
       // 框架應該會自動註冊和調用 ItemController 所以不需要new
-      public ItemController(MySqlConnection connection)
+      public ItemController(MySqlConnection connection, ItemService itemService)
       {
          this.connection = connection;
+         this.itemService = itemService;
       }
 
       [HttpPost("addnewitem")]
@@ -164,7 +166,6 @@ namespace CSharpAPI.Controllers
                };
                rows.Add(item);
             }
-            // return Ok(new APIResponse(true, "成功取得所有物品", rows));
             return Ok(new { success = true, items = rows });
          }
          catch (Exception exception)
@@ -223,57 +224,8 @@ namespace CSharpAPI.Controllers
             var id = (string)json["id"];
             int amount = (int)json["amount"];
 
-            await connection.OpenAsync();
-
-            // 查詢商品
-            Item item = null;
-
-            //為了在同一個Method內執行多次MySqlCommand 要這樣用using 包起來
-            using (var command = new MySqlCommand("SELECT * FROM Item WHERE id = @id", connection))
-            {
-               command.Parameters.AddWithValue("@id", id);
-               using var dataReader = await command.ExecuteReaderAsync();
-
-               if (await dataReader.ReadAsync())
-               {
-                  item = new Item()
-                  {
-                     id = Convert.ToInt64(dataReader["id"]),
-                     name = (string)dataReader["name"],
-                     detail = (string)dataReader["detail"],
-                     price = Convert.ToInt32(dataReader["price"]),
-                     stock = Convert.ToInt32(dataReader["stock"]),
-                     category = (string)dataReader["category"],
-                     status = (string)dataReader["status"],
-                     saleAmount = Convert.ToInt32(dataReader["saleAmount"]),
-                     thumbnail = (string)dataReader["thumbnail"],
-                  };
-               }
-            }
-
-            if (item == null)
-            {
-               return NotFound(new APIResponse(false, "找不到物品"));
-            }
-
-            if (item.stock < amount)
-            {
-               return Ok(new APIResponse(false, "庫存不足"));
-            }
-
-            // 更新商品
-            item.stock -= amount;
-            item.saleAmount += amount;
-            using (var updateCommand = new MySqlCommand(
-               "UPDATE Item SET stock = @stock, saleAmount = @saleAmount WHERE id = @id", connection))
-            {
-               updateCommand.Parameters.AddWithValue("@stock", item.stock);
-               updateCommand.Parameters.AddWithValue("@saleAmount", item.saleAmount);
-               updateCommand.Parameters.AddWithValue("@id", item.id);
-               await updateCommand.ExecuteNonQueryAsync();
-            }
-
-            return Ok(new APIResponse(true, "減少物品庫存 並 增加銷量"));
+            var (success, message) = await itemService.PurchaseItemAsync(id, amount);
+            return Ok(new APIResponse(success, message));
          }
          catch (Exception exception)
          {

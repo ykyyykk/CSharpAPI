@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using Newtonsoft.Json.Linq;
 using CSharpAPI.Utilities;
+using CSharpAPI.Services.Implementations;
 
 namespace CSharpAPI.Controllers
 {
@@ -10,10 +11,12 @@ namespace CSharpAPI.Controllers
    public class ECPayController : ControllerBase
    {
       private readonly MySqlConnection connection;
+      private readonly ItemService itemService;
 
-      public ECPayController(MySqlConnection connection)
+      public ECPayController(MySqlConnection connection, ItemService itemService)
       {
          this.connection = connection;
+         this.itemService = itemService;
       }
 
       [HttpPost("return")]
@@ -50,6 +53,12 @@ namespace CSharpAPI.Controllers
 
             string itemId = ecpayReturn["CustomField1"];
             int amount = int.Parse(ecpayReturn["CustomField2"]);
+
+            var (success, message) = await itemService.PurchaseItemAsync(itemId, amount);
+            if (!success)
+            {
+               return Ok(new APIResponse(false, message));
+            }
 
             return Ok("1|OK");
          }

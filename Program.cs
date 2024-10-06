@@ -1,10 +1,10 @@
+using CSharpAPI.Services.Implementations;
 using Microsoft.Extensions.FileProviders;
 using MySqlConnector;
 using System.Security.Authentication;
-// using CSharpAPI.Services.Interfaces;
-// using CSharpAPI.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 builder.Services.AddCors(options =>
 {
@@ -18,6 +18,10 @@ builder.Services.AddCors(options =>
 
 // 添加 Controller 支持
 builder.Services.AddControllers();
+builder.Services.AddScoped<ItemService>();
+// 暫時不要使用 
+// Access to XMLHttpRequest at 'https://api.louise.tw/api/getallitem' from origin 'https://www.louise.tw' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+// builder.Services.AddScoped<IItemService, ItemService>();
 
 // 使用 Scoped 生命週期而不是 Transient 為了在同一個method 執行兩次MySqlCommand
 // 雖然說不加還是可以 但是可能有 生命週期管理 測試困難 一致性 性能問題
