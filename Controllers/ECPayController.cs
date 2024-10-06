@@ -10,12 +10,10 @@ namespace CSharpAPI.Controllers
    public class ECPayController : ControllerBase
    {
       private readonly MySqlConnection connection;
-      // private readonly ItemService itemService;
 
-      public ECPayController(MySqlConnection connection /*, ItemService itemService */)
+      public ECPayController(MySqlConnection connection)
       {
          this.connection = connection;
-         // this.itemService = itemService;
       }
 
       [HttpPost("return")]
@@ -37,8 +35,8 @@ namespace CSharpAPI.Controllers
                  WHERE merchantTradeNo = @merchantTradeNo;",
                connection);
 
-            // 不懂為什麼不能直接用 ecpayReturn["MerchantTradeNo"]
-            // Parameter type StringValues is not supported; see https://fl.vu/mysql-param-type. Value: od20241006130526525"
+            // 直接使用 ecpayReturn["MerchantTradeNo"] 返回的是 StringValues 來自 Microsoft.Extensions.Primitives.StringValues
+            // 而不是純粹的 string
             string merchantTradeNo = ecpayReturn["MerchantTradeNo"];
             command.Parameters.AddWithValue("@paid", 1);
             command.Parameters.AddWithValue("@merchantTradeNo", merchantTradeNo);
@@ -52,12 +50,6 @@ namespace CSharpAPI.Controllers
 
             string itemId = ecpayReturn["CustomField1"];
             int amount = int.Parse(ecpayReturn["CustomField2"]);
-
-            // var (success, message) = await itemService.PurchaseItemAsync(itemId, amount);
-            // if (!success)
-            // {
-            //    return Ok(new APIResponse(false, message));
-            // }
 
             return Ok("1|OK");
          }

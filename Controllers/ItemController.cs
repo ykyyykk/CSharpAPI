@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using Newtonsoft.Json.Linq;
 using CSharpAPI.Utilities;
-// using CSharpAPI.Services.Implementations;
 
 namespace CSharpAPI.Controllers
 {
@@ -16,10 +15,9 @@ namespace CSharpAPI.Controllers
       // 使用了builder.Services.AddControllers()
       // 並且在 app.MapControllers() 中啟用了控制器路由
       // 框架應該會自動註冊和調用 ItemController 所以不需要new
-      public ItemController(MySqlConnection connection/*, ItemService itemService*/)
+      public ItemController(MySqlConnection connection)
       {
          this.connection = connection;
-         // this.itemService = itemService;
       }
 
       [HttpPost("addnewitem")]
@@ -224,9 +222,6 @@ namespace CSharpAPI.Controllers
             var json = JObject.Parse(requestBody);
             var id = (string)json["id"];
             int amount = (int)json["amount"];
-
-            // var (success, message) = await itemService.PurchaseItemAsync(id, amount);
-            // return Ok(new APIResponse(success, message));
 
             await connection.OpenAsync();
 

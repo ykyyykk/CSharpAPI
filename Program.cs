@@ -10,15 +10,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
     {
-        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
 // 添加 Controller 支持
 builder.Services.AddControllers();
-// 暫時不要使用 
-// Access to XMLHttpRequest at 'https://api.louise.tw/api/getallitem' from origin 'https://www.louise.tw' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-// builder.Services.AddScoped<IItemService, ItemService>();
 
 // 使用 Scoped 生命週期而不是 Transient 為了在同一個method 執行兩次MySqlCommand
 // 雖然說不加還是可以 但是可能有 生命週期管理 測試困難 一致性 性能問題
@@ -48,11 +47,8 @@ if (builder.Environment.IsProduction())
 
 var app = builder.Build();
 
-//使用Cors跨域設定
+//使用Cors跨域設定 必須在其他 middleware 之前
 app.UseCors("CorsPolicy");
-
-app.UseSwagger();
-app.UseSwaggerUI();
 
 // appsettings.json 最好只包含共用的數值 不共用 或是 根據Environment不同需要另外放置別的appsettings.環境名稱.json
 if (app.Environment.IsProduction())
@@ -61,13 +57,14 @@ if (app.Environment.IsProduction())
     app.UseHttpsRedirection();
 }
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 app.MapControllers();
 
-Console.WriteLine($"app.Environment.EnvironmentName: {app.Environment.EnvironmentName}");
 string filePath = app.Environment.IsDevelopment()
-? "/Users/wangshihchieh/Desktop/SourceTree/CSharpAPI"
+? "/TestImg"
 : "/var/www/html/img";
-Console.WriteLine($"filePath: {filePath}");
 
 // 設定圖片相對位置 註解掉會讓前端無法透過/img/...取得圖片 
 app.UseStaticFiles(new StaticFileOptions
@@ -76,9 +73,5 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/img"
 });
 
-if (app.Environment.IsProduction())
-{
-    app.Run();// Port改在 appsettings.Production.json ConfigureKestrel 設定
-    return;
-}
-app.Run("http://*:5927");
+// Port 根據 appsettings.json 的環境不同
+app.Run();
