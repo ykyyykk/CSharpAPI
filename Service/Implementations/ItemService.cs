@@ -17,7 +17,6 @@ namespace CSharpAPI.Services.Implementations
       {
          try
          {
-            // 不懂為什麼要判斷 會害dataReader的部分Error
             if (connection.State != ConnectionState.Open)
             {
                await connection.OpenAsync();

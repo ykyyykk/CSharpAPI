@@ -103,5 +103,22 @@ namespace CSharpAPI.Controllers
             return ExceptionHandler.HandleException(exception);
          }
       }
+
+      [HttpPost("issue")]
+      public async Task<IActionResult> Issue()
+      {
+         try
+         {
+            using var reader = new StreamReader(Request.Body);
+            var requestBody = await reader.ReadToEndAsync();
+            var json = JObject.Parse(requestBody);
+            Console.WriteLine(json);
+            return Ok(new APIResponse(true, ""));
+         }
+         catch (Exception exception)
+         {
+            return ExceptionHandler.HandleException(exception);
+         }
+      }
    }
 }
