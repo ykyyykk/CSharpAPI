@@ -3,6 +3,9 @@ using MySqlConnector;
 using Newtonsoft.Json.Linq;
 using CSharpAPI.Utilities;
 using CSharpAPI.Services.Implementations;
+using Newtonsoft.Json;
+using System.Text;
+using Microsoft.AspNetCore.Authentication;
 
 namespace CSharpAPI.Controllers
 {
@@ -10,13 +13,16 @@ namespace CSharpAPI.Controllers
    [Route("api")]
    public class ECPayController : ControllerBase
    {
+      private readonly HttpClient httpClient;
+      private const string apiUrl = "https://einvoice-stage.ecpay.com.tw/B2CInvoice/Issue";
       private readonly MySqlConnection connection;
       private readonly ItemService itemService;
 
-      public ECPayController(MySqlConnection connection, ItemService itemService)
+      public ECPayController(MySqlConnection connection, ItemService itemService, HttpClient httpClient)
       {
          this.connection = connection;
          this.itemService = itemService;
+         this.httpClient = httpClient;
       }
 
       [HttpPost("return")]
@@ -105,15 +111,29 @@ namespace CSharpAPI.Controllers
       }
 
       [HttpPost("issue")]
-      public async Task<IActionResult> Issue()
+      public async Task<IActionResult> Issue([FromBody] object requestData)
       {
          try
          {
-            using var reader = new StreamReader(Request.Body);
-            var requestBody = await reader.ReadToEndAsync();
-            var json = JObject.Parse(requestBody);
-            Console.WriteLine(json);
-            return Ok(new APIResponse(true, ""));
+            var content = new StringContent(
+               requestData.ToString(),
+               Encoding.UTF8,
+               "application/json"
+            );
+
+            var apiResponse = await httpClient.PostAsync(apiUrl, content);
+
+            var responseContent = await apiResponse.Content.ReadAsStringAsync();
+
+            Console.WriteLine(responseContent);
+            Console.WriteLine(apiResponse.IsSuccessStatusCode);
+
+            if (!apiResponse.IsSuccessStatusCode)
+            {
+               return StatusCode((int)apiResponse.StatusCode, responseContent);
+            }
+            // return OK 在Postman會是text 不好看 因為responseContent 是string
+            return Content(responseContent, "application/json");
          }
          catch (Exception exception)
          {

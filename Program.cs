@@ -19,6 +19,7 @@ builder.Services.AddCors(options =>
 // 添加 Controller 支持
 builder.Services.AddControllers();
 builder.Services.AddScoped<ItemService>();
+builder.Services.AddScoped<HttpClient>();
 // 暫時不要使用 
 // Access to XMLHttpRequest at 'https://api.louise.tw/api/getallitem' from origin 'https://www.louise.tw' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
 // builder.Services.AddScoped<IItemService, ItemService>();
@@ -67,7 +68,8 @@ app.UseSwaggerUI();
 app.MapControllers();
 
 string filePath = app.Environment.IsDevelopment()
-? "/TestImg"
+? "/Users/wangshihchieh/Desktop/SourceTree/CSharpAPI"
+// ? "/TestImg"
 : "/var/www/html/img";
 
 // 設定圖片相對位置 註解掉會讓前端無法透過/img/...取得圖片 
