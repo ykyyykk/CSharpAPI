@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 public class Invoice
 {
    private readonly InvoiceSettings invoiceSettings;
-   public string MerchantID = "2000132";
    public dynamic RqHeader;
    public dynamic Data;
 
@@ -14,11 +13,11 @@ public class Invoice
    {
       this.invoiceSettings = invoiceSettings.Value;
       var timestamp = GetTimestamp();
-      Console.WriteLine($"timestamp: {timestamp}");
+      // Console.WriteLine($"timestamp: {timestamp}");
       this.RqHeader = new { Timestamp = timestamp };
       this.Data = new
       {
-         MerchantID = this.MerchantID,
+         MerchantID = this.invoiceSettings.MerchantID,
          RelateNumber = $"louise{timestamp}",
          CustomerName = customerName, // print == 1 時必填
          CustomerAddr = "address", // print == 1 時必填
@@ -38,15 +37,11 @@ public class Invoice
       // this.Data.Items.Add(items);
       // this.Data.SalesAmount = GetSaleAmount(items);
 
-      //TODO 弄一個全域變數 不然之後要改很麻煩 還有一個地方在Issue
-      var Issue_HASHKEY = "ejCk326UnaZWKisg";
-      var Issue_HASHIV = "q9jcZX8Ib9LM8wYk";
-
       // URLEncode
       var encodedData = HttpUtility.UrlEncode(Newtonsoft.Json.JsonConvert.SerializeObject(this.Data));
 
       // AES 加密並儲存在 Data
-      this.Data = EncryptData(Issue_HASHKEY, Issue_HASHIV, encodedData);
+      this.Data = EncryptData(this.invoiceSettings.HashKey, this.invoiceSettings.HashIV, encodedData);
    }
 
    public string GetTimestamp()

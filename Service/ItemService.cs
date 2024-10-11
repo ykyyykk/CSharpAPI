@@ -25,9 +25,7 @@ namespace CSharpAPI.Services
 
             using (var command = new MySqlCommand("Select * FROM Item WHERE id = ?", connection))
             {
-               // Console.WriteLine($"connection: {connection.ConnectionString}");
                command.Parameters.AddWithValue("?", itemID);
-               Console.WriteLine($"itemID: {itemID}");
                using var dataReader = await command.ExecuteReaderAsync();
 
                if (await dataReader.ReadAsync())

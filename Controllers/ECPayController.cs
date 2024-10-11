@@ -101,8 +101,8 @@ namespace CSharpAPI.Controllers
       {
          try
          {
-            Console.WriteLine($"Issue=====================");
-            Console.WriteLine($"requestData: {requestData}");
+            // Console.WriteLine($"Issue=====================");
+            // Console.WriteLine($"requestData: {requestData}");
 
             var content = new StringContent(
                requestData.ToString(),
@@ -129,8 +129,8 @@ namespace CSharpAPI.Controllers
             // var decryptedData = DecryptData(invoice.Data);
             // Console.WriteLine($"解密後的資料為: {decryptedData}");
 
-            Console.WriteLine($"回傳數值: {responseContent}");
-            Console.WriteLine($"IsSuccess: {apiResponse.IsSuccessStatusCode}");
+            // Console.WriteLine($"回傳數值: {responseContent}");
+            // Console.WriteLine($"IsSuccess: {apiResponse.IsSuccessStatusCode}");
 
             if (!apiResponse.IsSuccessStatusCode)
             {
@@ -184,8 +184,8 @@ namespace CSharpAPI.Controllers
 
       public string DecryptData(string encryptedData)
       {
-         byte[] keyBytes = Encoding.UTF8.GetBytes("ejCk326UnaZWKisg");
-         byte[] ivBytes = Encoding.UTF8.GetBytes("q9jcZX8Ib9LM8wYk");
+         byte[] keyBytes = Encoding.UTF8.GetBytes(invoiceSettings.Value.HashKey);
+         byte[] ivBytes = Encoding.UTF8.GetBytes(invoiceSettings.Value.HashIV);
          byte[] encryptedBytes = Convert.FromBase64String(encryptedData);
 
          using (Aes aes = Aes.Create())
