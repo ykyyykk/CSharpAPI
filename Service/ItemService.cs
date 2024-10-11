@@ -1,8 +1,7 @@
-
 using MySqlConnector;
 using System.Data;
 
-namespace CSharpAPI.Services.Implementations
+namespace CSharpAPI.Services
 {
    public class ItemService
    {
@@ -26,7 +25,7 @@ namespace CSharpAPI.Services.Implementations
 
             using (var command = new MySqlCommand("Select * FROM Item WHERE id = ?", connection))
             {
-               Console.WriteLine($"connection: {connection.ConnectionString}");
+               // Console.WriteLine($"connection: {connection.ConnectionString}");
                command.Parameters.AddWithValue("?", itemID);
                Console.WriteLine($"itemID: {itemID}");
                using var dataReader = await command.ExecuteReaderAsync();

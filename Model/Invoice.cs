@@ -1,17 +1,20 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+using Microsoft.Extensions.Options;
 
 public class Invoice
 {
+   private readonly InvoiceSettings invoiceSettings;
    public string MerchantID = "2000132";
    public dynamic RqHeader;
    public dynamic Data;
 
-   public Invoice(string customerName, List<dynamic> items)
+   public Invoice(IOptions<InvoiceSettings> invoiceSettings, string customerName, List<dynamic> items)
    {
+      this.invoiceSettings = invoiceSettings.Value;
       var timestamp = GetTimestamp();
-      // Console.WriteLine($"timestamp: {timestamp}");
+      Console.WriteLine($"timestamp: {timestamp}");
       this.RqHeader = new { Timestamp = timestamp };
       this.Data = new
       {

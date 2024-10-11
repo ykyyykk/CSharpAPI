@@ -1,4 +1,4 @@
-using CSharpAPI.Services.Implementations;
+using CSharpAPI.Services;
 using Microsoft.Extensions.FileProviders;
 using MySqlConnector;
 using System.Security.Authentication;
@@ -18,6 +18,7 @@ builder.Services.AddCors(options =>
 
 // 添加 Controller 支持
 builder.Services.AddControllers();
+builder.Services.Configure<InvoiceSettings>(builder.Configuration.GetSection("InvoiceSettings"));
 builder.Services.AddScoped<ItemService>();
 builder.Services.AddScoped<HttpClient>();
 // 暫時不要使用 
@@ -68,8 +69,8 @@ app.UseSwaggerUI();
 app.MapControllers();
 
 string filePath = app.Environment.IsDevelopment()
-? "/Users/wangshihchieh/Desktop/SourceTree/CSharpAPI"
-// ? "/TestImg"
+// ? "/Users/wangshihchieh/Desktop/SourceTree/CSharpAPI"
+? "/TestImg"
 : "/var/www/html/img";
 
 // 設定圖片相對位置 註解掉會讓前端無法透過/img/...取得圖片 

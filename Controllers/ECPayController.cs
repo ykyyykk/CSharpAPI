@@ -2,11 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using Newtonsoft.Json.Linq;
 using CSharpAPI.Utilities;
-using CSharpAPI.Services.Implementations;
+using CSharpAPI.Services;
 using System.Text;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Web;
+using Microsoft.Extensions.Options;
 
 namespace CSharpAPI.Controllers
 {
@@ -18,9 +19,10 @@ namespace CSharpAPI.Controllers
       private const string apiUrl = "https://einvoice-stage.ecpay.com.tw/B2CInvoice/Issue";
       private readonly MySqlConnection connection;
       private readonly ItemService itemService;
-
-      public ECPayController(MySqlConnection connection, ItemService itemService, HttpClient httpClient)
+      private readonly IOptions<InvoiceSettings> invoiceSettings;
+      public ECPayController(IOptions<InvoiceSettings> invoiceSettings, MySqlConnection connection, ItemService itemService, HttpClient httpClient)
       {
+         this.invoiceSettings = invoiceSettings;
          this.connection = connection;
          this.itemService = itemService;
          this.httpClient = httpClient;
@@ -75,7 +77,7 @@ namespace CSharpAPI.Controllers
                ItemPrice = 1, // 物品價格
                ItemAmount = int.Parse(ecpayReturn["TradeAmt"]), // itemPrice * itemCount
             };
-            Invoice invoice = new Invoice("customerName", new List<dynamic>() { item });
+            Invoice invoice = new Invoice(this.invoiceSettings, "customerName", new List<dynamic>() { item });
 
             // Invoice.data urlencoode AESEncrypt 並 轉json
             // Console.WriteLine(invoice.Data);
