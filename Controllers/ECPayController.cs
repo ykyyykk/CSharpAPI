@@ -33,7 +33,6 @@ namespace CSharpAPI.Controllers
       {
          try
          {
-            // Console.WriteLine($"ecpayReturn.ToString(): {ecpayReturn.ToString()}====================================");
             if (ecpayReturn["RtnCode"] != "1")
             {
                Console.WriteLine("付款失敗");
@@ -58,8 +57,12 @@ namespace CSharpAPI.Controllers
                return NotFound(new APIResponse(false, "找不到訂單"));
             }
 
+            //Console.WriteLine($"itemID: {ecpayReturn["CustomField1"]}");
+            //Console.WriteLine($"amount: {ecpayReturn["CustomField2"]}");
+            //Console.WriteLine($"TradeAmt: {ecpayReturn["TradeAmt"]}");
             string itemId = ecpayReturn["CustomField1"];
             int amount = int.Parse(ecpayReturn["CustomField2"]);
+            int itemAmount = int.Parse(ecpayReturn["TradeAmt"]);
 
             // 減少商品庫存
             var (success, message) = await itemService.PurchaseItemAsync(itemId, amount);
@@ -74,8 +77,8 @@ namespace CSharpAPI.Controllers
                ItemName = $"item: {itemId}",
                ItemCount = amount, // 物品數量
                ItemWord = "個",
-               ItemPrice = 1, // 物品價格
-               ItemAmount = int.Parse(ecpayReturn["TradeAmt"]), // itemPrice * itemCount
+               ItemPrice = itemAmount / amount, // 物品價格 原本是1 所以買商店的物品不可能成功
+               ItemAmount = itemAmount, // itemPrice * itemCount
             };
             Invoice invoice = new Invoice(this.invoiceSettings, "customerName", new List<dynamic>() { item });
 

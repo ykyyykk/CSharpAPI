@@ -6,6 +6,8 @@ using Microsoft.Extensions.Options;
 public class Invoice
 {
    private readonly InvoiceSettings invoiceSettings;
+   //Invoice有兩個MerchantID 這邊一個 Data一個不要刪掉
+   public string MerchantID;
    public dynamic RqHeader;
    public dynamic Data;
 
@@ -14,10 +16,12 @@ public class Invoice
       this.invoiceSettings = invoiceSettings.Value;
       var timestamp = GetTimestamp();
       // Console.WriteLine($"timestamp: {timestamp}");
+      //Console.WriteLine($"this.invoiceSettings.MerchantID: {this.invoiceSettings.MerchantID}");
+      this.MerchantID = this.invoiceSettings.MerchantID;
       this.RqHeader = new { Timestamp = timestamp };
       this.Data = new
       {
-         MerchantID = this.invoiceSettings.MerchantID,
+         MerchantID = this.MerchantID,
          RelateNumber = $"louise{timestamp}",
          CustomerName = customerName, // print == 1 時必填
          CustomerAddr = "address", // print == 1 時必填
