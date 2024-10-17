@@ -252,7 +252,6 @@ namespace CSharpAPI.Controllers
 
 				await insertCommand.ExecuteNonQueryAsync();
 
-				// sendMail不知道怎麼做
 				var mailMessage = new MailMessage
 				{
 					From = new MailAddress("louise872726@gmail.com"),
