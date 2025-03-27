@@ -70,7 +70,7 @@ app.MapControllers();
 
 string filePath = app.Environment.IsDevelopment()
 // ? "/Users/wangshihchieh/Desktop/SourceTree/CSharpAPI"
-? "/TestImg"
+? "/Users/louise/TestImg"
 : "/var/www/html/img";
 
 // 設定圖片相對位置 註解掉會讓前端無法透過/img/...取得圖片 
